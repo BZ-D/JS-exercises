@@ -16,7 +16,7 @@ var maxDepth = function (root) {
 #### 2、二叉树层序遍历为二维数组
 
 ```
-	3               
+    3               
    / \
   5   2
  / \ / \
