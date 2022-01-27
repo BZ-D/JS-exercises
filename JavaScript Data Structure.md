@@ -544,6 +544,8 @@ var reverseList = function (head) {
 
 平均时间复杂度：$O(n^2)$，最好情况：$O(n)$，稳定排序（数据相同时不交换）。
 
+![](assets/冒泡排序.gif)
+
 ```js
 // 初始版
 var bubbleSort = function (array) {
@@ -579,6 +581,8 @@ var bubbleSort = function (array) {
 
 时间复杂度：$O(n^2)$，不稳定排序（如 arr = [5,8,5,2,9]，在第一次选择时，arr[0]和arr[3]会进行交换，此时两个相等的 5 的相对顺序发生了改变）
 
+![](assets/选择排序.gif)
+
 ```js
 var selectionSort = function (array) {
     let ans = [...array];
@@ -603,6 +607,8 @@ var selectionSort = function (array) {
 每次排一个数组项，以此方式构建最后的排序数组。假定第一项已经排序了，接着将其与第二项进行比较，并决定第二项应该待在原位还是插到第一项之前；头两项正确排序后，接着比较第三项，并决定第三项应该插入到第一、第二还是原位，以此类推。
 
 平均时间复杂度：$O(n^2)$，最好情况：$O(n)$，稳定排序（不会交换相等项）
+
+![](assets/插入排序.gif)
 
 ```js
 var insertionSort = function (array) {
@@ -660,6 +666,8 @@ var shellSort = function (array) {
 
 时间复杂度：$O(nlogn)$，空间复杂度：$O(n)$，空间换时间，稳定排序。
 
+![](assets/归并排序.gif)
+
 ```js
 var mergeSort = function (arr) {
     let len = arr.length;
@@ -698,6 +706,8 @@ function merge(left, right) {
 平均时间复杂度：$O(nlogn)$，通常情况下快于归并排序，最坏情况：$O(n^2)$
 
 空间复杂度：$O(logn)$
+
+![](assets/快速排序.gif)
 
 - 主要流程
   1. 在数据集中选择一个元素作为基准(pivot)
@@ -837,6 +847,8 @@ var quickSort = function(arr) {
    <img src="assets/image-20220127152437348.png" alt="image-20220127152437348" style="zoom:33%;" />
 
    <img src="assets/image-20220127152444735.png" alt="image-20220127152444735" style="zoom:50%;" />
+   
+   ![](assets/堆排序.gif)
 
 ```js
 // 交换两个节点
@@ -886,3 +898,127 @@ let Arr = [4, 6, 8, 5, 9, 1, 2, 5, 3, 2];
 heapSort(Arr);
 alert(Arr);
 ```
+
+#### 8、计数排序
+
+核心在于将输入的数据值转化为键存储在额外开辟的数组空间中，作为一种线性时间复杂度的排序，计数排序要求输入的数据必须是有确定范围的整数，以便额外开辟数组进行计数。
+
+时间复杂度：$O(n+k)$，空间复杂度：$O(k)$
+
+<img src="assets/计数排序.webp" style="zoom: 50%;" />
+
+```js
+function countingSort(arr, maxValue) {
+    // maxValue为给定数据中的最大值
+    let bucket = new Array(maxValue + 1),
+        sortedIndex = 0,
+        arrLen = arr.length,
+        bucketLen = maxValue + 1;
+    for (let i = 0; i < arrLen; i++) {
+        if (!bucket[arr[i]])  bucket[arr[i]] = 0;
+        bucket[arr[i]]++;
+    }
+    for (let j = 0; j < bucketLen; j++) {
+        while (bucket[j] > 0) {
+            arr[sortedIndex++] = j;
+            bucket[j]--;
+        }
+    }
+    return arr;
+}
+```
+
+#### 9、桶排序
+
+是计数排序的升级版，利用函数和映射关系，高效与否的关键在于这个映射函数的确定。为了使桶排序更加高效，我们需要做到这两点：
+
+- 在额外空间充足的情况下，尽量增大桶的数量
+- 使用的映射函数能够将输入的N个数据均匀分配到K个桶中
+
+**最好情况**：输入的数据可以均匀分布到每个桶中，$O(n+k)$
+
+**最坏情况**：输入的数据被分配到了同一个桶中，$O(n^2)$
+
+```js
+function bucketSort(arr, bucketSize) {
+    if (arr.length === 0) return arr;
+    
+    let i, minValue = arr[0], maxValue = arr[0];
+    // 取得数组中的两个最值
+    for (i = 1; i < arr.length; i++) {
+        if (arr[i] < minValue) {
+            minValue = arr[i];
+        } else if (arr[i] > maxValue) {
+            maxValue = arr[i];
+        }
+    }
+    
+    // 桶初始化
+    const DEFAULT_BUCKET_SIZE = 5;  // 设置桶的默认容量为5
+    // 两数作逻辑或时，保留较小者
+    bucketSize = bucketSize || DEFAULT_BUCKET_SIZE;
+    // 桶的数量
+    let bucketCount = Math.floor((maxValue - minValue) / bucketSize) + 1;
+    let buckets = new Array(bucketCount);
+    for (i = 0; i < arr.length; i++) {
+        bucket[i] = [];
+    }
+    
+    // 利用映射函数将数据分配到各个桶中
+    for (i = 0; i < arr.length; i++) {
+        buckets[Math.floor((arr[i] - minValue) / bucketSize)].push(arr[i]);
+    }
+    arr.length = 0;
+    for (i = 0; i < buckets.length; i++) {
+        // 对每个桶内进行排序，这里使用插入排序
+        insertionSort(buckets[i]);
+        for (let j = 0; j < buckets[i].length; j++) {
+            arr.push(buckets[i][j]);
+        }
+    }
+    return arr;
+}
+```
+
+#### 10、基数排序(Radix Sort)
+
+有两种：MSD - 从高位开始进行排序；LSD - 从低位开始进行排序
+
+- 基数排序：根据**键值的每位数字**来分配桶（如LSD，从个位开始）
+- 计数排序：每个桶只存储单一键值
+- 桶排序：每个桶存储一定范围的数值
+
+LSD计数排序示意图：
+
+![](assets/LSD基数排序.webp)
+
+```js
+// LSD
+// counter用于存放一系列的桶
+var counter = [];
+function radixSort(arr, maxDigit) {
+    // maxDigit: 最高到多少位
+    let mod = 10;
+    let dev = 1;
+    for (let i = 0; i < maxDigit; i++, dev *= 10, mod *= 10) {
+        for (let j = 0; j < arr.length; j++) {
+            // 找到每一位对应的桶，并将arr[j]放入桶counter中
+            let bucket = parseInt((arr[j] % mod) / dev);
+            if (counter[bucket] === null) counter[bucket] = [];
+            counter[bucket].push(arr[j]);
+        }
+        let pos = 0;
+        for (let j = 0; j < counter.length; j++) {
+            // 从桶中依次取出数据
+            let value = null;
+            if (counter[j] !== null) {
+                while ( (value = counter[j].shift()) !== null ) {
+                    arr[pos++] = value;
+                }
+            }
+        }
+    }
+    return arr;
+}
+```
+
