@@ -466,3 +466,251 @@ function dfs(matrix, i, j, m, n, cache) {
 #### 1、链表排序
 
 使用自上而下的归并算法进行排序，使用`slow.next`和`fast.next.next`两种速度获取链表节点，从而获取中间值。
+
+```js
+var sortList = function (head) {
+    if (head === null || head.next === null) return head;
+    
+    let prev = null, slow = head, fast = head;
+    while (fast !== null && fast.next !== null) {
+        prev = slow;
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    prev.next = null;
+    
+    let l1 = sortList(head);
+    let l2 = sortList(slow);
+    
+    return merge(l1, l2);
+};
+
+function merge(l1, l2) {
+    let l = new ListNode(0), p = l;
+    while (l1 !== null && l2 !== null) {
+        if (l1.val < l2.val) {
+            p.next = l1;
+            l1 = l1.next;
+        } else {
+            p.next = l2;
+            l2 = l2.next;
+        }
+        p = p.next;
+    }
+    
+    if (l1 !== null) p.next = l1;
+    if (l2 !== null) p.next = l2;
+    return l.next;
+}
+```
+
+#### 2、链表倒序
+
+```js
+// 迭代：时间复杂度O(n)
+// 遍历时，将当前节点的next指针改为指向前一节点
+// 由于节点没有引用其前一个节点，因此必须事先存储其前一个节点
+// 在更改引用之前，还需要存储后一个节点
+// 最后返回新的头引用
+var reverseList = function (head) {
+    // 一开始prev设为null是因为原链表的头结点在反转后的链表中是尾结点
+    // 因此原链表头结点在反转后应指向null
+    let prev = null, cur = head;
+    while (cur !== null) {
+        // 将当前节点指向前一节点
+        let next = cur.next;
+        cur.next = prev;
+        // 挪到后一位置
+        prev = cur;
+        cur = next;
+    }
+    return prev;
+};
+```
+
+
+
+### 七、排序
+
+<a href="https://blog.csdn.net/Mayness/article/details/98884165">参考链接</a>
+
+<img src="assets/image-20220127105737560.png" alt="image-20220127105737560" style="zoom: 50%;" />
+
+**稳定性**是指相同数据的相对位置是否改变，即在原数组中，若 $r_i=r_j\ 且\ i<j$，则排序后若 $r_i$ 仍在 $r_j$ 前面，则称此排序是稳定的。
+
+#### 1、冒泡排序
+
+比较任何两个相邻的项，如果前一项比后一项大，则交换它们。
+
+平均时间复杂度：$O(n^2)$，最好情况：$O(n)$，稳定排序（数据相同时不交换）。
+
+```js
+// 初始版
+var bubbleSort = function (array) {
+    let ans = [...array];
+    let length = array.length;
+    for (let i = 0; i < length; i++) {
+        for (let j = 0; j < length - 1; j++) {
+            if (ans[j] > ans[j + 1]) {
+                swap(j, j+1);
+            }
+        }
+    }
+    return ans;
+};
+
+// 改进版：省去不必要的比较
+var bubbleSort = function (array) {
+    let ans = [...array];
+    let length = array.length;
+    for (let i = 0; i < length; i++) {
+        for (let j = 0; j < length - (i + 1); j++) {
+            if (ans[j] > ans[j + 1]) {
+                swap(j, j+1);
+            }
+        }
+    }
+}
+```
+
+#### 2、选择排序
+
+找到数组中的最小值并将其放置在第一位，接着找到第二小的值并将其放在第二位，以此类推。
+
+时间复杂度：$O(n^2)$，不稳定排序（如 arr = [5,8,5,2,9]，在第一次选择时，arr[0]和arr[3]会进行交换，此时两个相等的 5 的相对顺序发生了改变）
+
+```js
+var selectionSort = function (array) {
+    let ans = [...array];
+    let length = array.length, indexMin;
+    for (let i = 0; i < length - 1; i++) {
+        indexMin = i;
+        for (let j = i; j < length; j++) {
+            if (ans[indexMin] > array[j]) {
+                indexMin = j;
+            }
+        }
+        if (i !== indexMin) {
+            swap(i, indexMin);
+        }
+    }
+    return ans;
+}
+```
+
+#### 3、插入排序
+
+每次排一个数组项，以此方式构建最后的排序数组。假定第一项已经排序了，接着将其与第二项进行比较，并决定第二项应该待在原位还是插到第一项之前；头两项正确排序后，接着比较第三项，并决定第三项应该插入到第一、第二还是原位，以此类推。
+
+平均时间复杂度：$O(n^2)$，最好情况：$O(n)$，稳定排序（不会交换相等项）
+
+```js
+var insertionSort = function (array) {
+    let length = array.length, j, temp;
+    let ans = [...array];
+    for (let i = 1; i < length; i++) {
+        j = i;
+        // 现在要考虑第i项——a[i]要插入到何处，先用temp暂存该项
+        temp = ans[i];
+        
+        // 若前一项大于该项，则将前一项往后挪，直到找到插入位置
+        while (j > 0 && ans[j - 1] > temp) {
+            // 将前一项挪到后一项
+            ans[j] = ans[j - 1];
+            j--;
+        }
+        
+        // 插入
+        ans[j] = temp;
+    }
+    return ans;
+};
+```
+
+#### 4、希尔排序
+
+插入排序的更高效率的实现，会优先比较距离较远的元素，希尔排序的核心在于间隔序列的设定，既可以提前设定好间隔序列，也可以动态定义间隔序列。
+
+平均时间复杂度：$O(nlogn)$，不稳定排序。
+
+```js
+var shellSort = function (array) {
+    let len = array.length, temp, gap = 1;
+    while (gap < len / 3) {
+        gap = gap * 3 + 1;
+    }
+    for (; gap > 0; gap = Math.floor(gap / 3)) {
+        for (let i = gap; i < len; i++) {
+            temp = arr[i];
+            for (let j = i - gap; j >= 0 && array[j] > temp; j -= gap) {
+                array[j + gap] = array[j];
+            }
+            array[j + gap] = temp;
+        }
+    }
+    return array;
+}
+```
+
+#### 5、归并排序
+
+分治思想的典型应用，可以采用自上而下的递归和底下而上的迭代两种方式。在JS中，递归层次太深，而JS语言之前没有提供尾递归优化，可能造成栈溢出，因此采用迭代。
+
+但是在ES6中已经添加了对尾递归优化的支持，但需要在严格模式下才能开启，尾递归优化发生时，函数调用栈会改写，在正常模式下用于跟踪函数调用栈的两个变量：`func.arguments`和`func.caller`在改写时会失真，而严格模式会禁用这两个变量。因此尾调用模式仅在严格模式下生效。
+
+时间复杂度：$O(nlogn)$，空间复杂度：$O(n)$，空间换时间，稳定排序。
+
+```js
+var mergeSort = function (arr) {
+    let len = arr.length;
+    if (len < 2) return arr;
+    let middle = Math.floor(len / 2),
+        left = arr.slice(0, middle),
+        right = arr.slice(middle);
+    return merge(mergeSort(left), mergeSort(right));
+};
+
+function merge(left, right) {
+    let res = [];
+    while (left.length && right.length) {
+        // 将左部分数组和右部分数组的首部元素进行大小比较，并将较小者弹出并放入结果数组中
+        if (left[0] <= right[0]) {
+            // 不会改变相等数据的相对次序
+            res.push(left.shift());
+        } else {
+            res.push(right.shift());
+        }
+    }
+    while (left.length) {
+        res.push(left.shift());
+    }
+    while (right.length) {
+        res.push(right.shift());
+    }
+    return res;
+}
+```
+
+#### 6、快速排序
+
+分治思想的典型应用，是在冒泡排序基础上的递归分治法。其内循环比大多数排序算法都要短小，主要缺点是很脆弱，实现有误差就会变成慢排序。
+
+平均时间复杂度：$O(nlogn)$，通常情况下快于归并排序，最坏情况：$O(n^2)$
+
+空间复杂度：$O(logn)$
+
+- 主要流程
+  1. 在数据集中选择一个元素作为基准(pivot)
+  2. 对于所有小于基准的元素，都移到基准的左边；所有大于基准的元素，都移到基准的右边
+  3. 当左指针大于右指针时，对基准左边和右边的两个子集，不断重复第一步和第二步，直到所有子集只剩下一个元素
+
+- 示例
+  - `var items = [6, 1, 2, 7, 9, 3, 4, 5, 10, 8]`
+  - 若选择第一个元素`6`为基准值，左指针索引值为`0`，右指针索引值为`items.length-1`
+  - 由于选取了第一个元素为基准值，因此先移动右指针，移动到`5`的时候，发现`5<6`，右指针停止，左指针移动；左指针移动到`7`时，发现`7>6`，左指针停止移动
+  - 交换两指针所指向的值，得`[6,1,2,5,9,3,4,7,10,8]`
+  - 然后，右指针接着向左移动（选择第一个元素当基准值，那么每次都要让右指针开始移动），发现`4<6`，右指针停止；左指针移动，发现`9>6`，也停止
+  - 交换两指针所指向的值，得`[6,1,2,5,4,3,9,7,10,8]`
+  - 然后，右指针接着向左移动，发现`3<6`，右指针停止；左指针继续向右移动，此时左指针也指向`3`，两指针相遇，说明第一次探测结束，将基准值`6`和最终值`3`进行交换，得`[3,1,2,5,4,6,9,7,10,8]`，此时以`6`为分界点，左子集的值都小于它，右子集的值都大于它，然后以`6`为分界点拆分为两个序列`[3, 1, 2, 5, 4]`和`[9, 7, 10, 8]`
+  - 
+
