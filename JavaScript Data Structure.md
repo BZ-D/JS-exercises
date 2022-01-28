@@ -1,4 +1,4 @@
-## 各类算法题解决方案
+## 各类算法题解决方案（一）
 
 ### 一、二叉树
 
@@ -348,8 +348,19 @@ var longestPalidrome = funstion (s) {
 2. 判断当前位置是否和目标字符串的pos位置字符匹配
 3. 判断匹配的pos是不是已经是最后一个位置，如果是，说明我们已经完成这次匹配，可以直接返回
 4. 如果匹配我们先标记当前位置已经访问过（如给该位置设为「*」），然后继续遍历相邻的搜索空间
-
 5. 最后清理现场，将已经访问等状态复原（将设为「*」的元素复原）
+
+```
+DFS (顶点v) {
+    1) 标记v为已遍历
+    2) for (对于每个邻接于顶点v且未标记的点u) {
+           DFS(u);
+       }
+    3) 恢复v的标记
+}
+```
+
+
 
 #### 1、单词搜索
 
@@ -454,6 +465,71 @@ function dfs(matrix, i, j, m, n, cache) {
     }
     cache[i][j] = max;
     return max;
+}
+```
+
+#### 3、广度优先搜索
+
+将从条件1到条件2的所有可能性都列出来，进行同步搜索的过程，适用于查找**最短路径**。
+
+```
+BFS() {
+	1) 输入起始点
+	2) 初始化所有顶点，标记为未遍历
+	3) 初始化一个队列queue，并将起点放入队列
+	
+	while (!queue.isEmpty()) {
+		从队列中删除一个顶点s，并标记为已遍历
+		将s邻接的所有尚未遍历的点入队
+	}
+}
+```
+
+**例题：单词接龙**
+
+<img src="assets/image-20220129001633856.png" alt="image-20220129001633856" style="zoom: 67%;" />
+
+```js
+var ladderLength = function (beginWord, endWord, wordList) {
+    if (!wordList.includes(endWord)) return 0;
+    let set = new Set(),  // 用于模拟队列，add表示入队，delete表示出队
+        visited = new Set(),
+        len = 1;
+    
+    set.add(beginWord);
+    visited.add(beginWord);
+    while (set.size !== 0) {
+        let tmp = new Set([...set]);
+        
+        // 对于set中的每个单词，首先将其设为已标记，看它能不能直接转化到endWord
+        // 若不能，则找到wordList中当前单词可以转化到的单词，并将它们加入到set中
+        for (let w of tmp) {
+            visited.add(w);
+            set.delete(w);  // 从队列中删除，并标记为已访问
+            
+            if (changeOneChar(w, endWord)) {
+                return len + 1;
+            }
+            for (let word of wordList) {
+                // 此题中邻接的定义：当前单词w若能转换到word，即意味着word与当前单词w“邻接”
+                // 将所有与w“邻接”的、且未访问的单词入队
+                if (changeOneChar(w, word) && !visited.has(word)) {
+                    set.add(word);
+                }
+            }
+        }
+        len++;
+    }
+    return 0;
+};
+
+function changeOneChar(wordA, wordB) {
+    let cnt = 0;
+    for (let i = 0; i < wordA.length; i++) {
+        if (wordA[i] !== wordB[i]) cnt++;
+        if (cnt > 1) return false;
+    }
+    return cnt === 1;
 }
 ```
 
@@ -1026,6 +1102,8 @@ function radixSort(arr, maxDigit) {
 
 ### 八、排序例题
 
+#### 1、游戏中弱角色的数量
+
 <img src="assets/image-20220128111116494.png" alt="image-20220128111116494" style="zoom: 67%;" />
 
 思路：
@@ -1033,6 +1111,8 @@ function radixSort(arr, maxDigit) {
 - 将properties数组中的元素进行排序，排序规则：优先以降序排列攻击力，若攻击力相同，则以升序排列防御力
 - 从头开始遍历排序后的properties数组，并记录当前时刻遍历到的最大防御力值，因为攻击力是按降序排序，因此遍历到每个元素时只需要比较该元素的防御力与最大防御力值，若小于，则当前元素为一个弱角色
 - 当遍历到连续多个攻击力相同的元素时，为了避免将它们中防御力较小的那些元素误计入结果中，因此先前排序时需要以升序排列防御力，这样保证了最大防御力值（若发生更新）会在一系列攻击力相同的角色的最后一个（即防御力最大的那个）处更新
+
+此题也可以考虑使用单调栈。
 
 ```js
 var numberOfWeakCharacters = function(properties) {
@@ -1049,6 +1129,165 @@ var numberOfWeakCharacters = function(properties) {
         }
     }
     return ans;
+};
+```
+
+#### 2、求数组中第K大的值
+
+使用选择排序排列了前K个值得到结果。
+
+```js
+var findKthLargest = function (nums, k) {
+    for (let i = 0; i <= k; i++) {
+        let max = i;
+        for (let j = 0; j < nums.length; j++) {
+            if (nums[j] > nums[max]) max = j;
+        }
+        swap(nums, i, max);
+    }
+    return nums[k - 1];
+};
+
+function swap(arr, i, j) {
+    let tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+}
+```
+
+#### 3、对有重复值的数组进行排序
+
+有重复值数组采用三项切分的快速排序，也可以使用计数排序。
+
+```js
+var sortColors = function (nums) {
+    sort(nums, 0, nums.length - 1);
+};
+
+function sort(arr, lo, hi) {
+    /*
+    三项切分快速排序主体：类似于快速排序，优化点在于如果某个元素等于切分元素
+    元素位置不变，最后小于切分元素的到左边，等于切分元素的根据数量放在中间
+    大于切分元素的放在右边
+    */
+    if (hi <= lo) return;
+    
+    let lt = lo,
+        i = lo + 1,  // 左指针
+        gt = hi;	 // 右指针
+    let v = arr[lo];
+    
+    while (i <= gt) {
+        if (arr[i] < v) swap(arr, lt++, i++);
+        else if (arr[i] > v) swap(arr, i, gt--);
+        else i++;
+    }
+    
+    sort(arr, lo, lt - 1);
+    sort(arr, gt + 1, hi);
+}
+
+function swap(arr, a, b) {
+    let x = arr[a];
+    arr[a] = arr[b];
+    arr[b] = x;
+}
+```
+
+
+
+### 九、算数例题
+
+注意事项：如果使用累加、累乘等常数级别增长，可能出现超时，因此需要指数级别增长来找到结果。
+
+#### 1、计算 $x^n$
+
+- 累乘：$x\times x\times \dots\times x$
+- 转换为指数级增长：$2^9=2\times4^4=2\times16^2=2\times256=512$，对于 $x^n$：
+  - 若 n % 2 !== 0，即 n 为奇数，则 $x^n = x \times(x^2\times x^{\lfloor\frac{n}{2}\rfloor})$
+  - 否则，$x^n=x^2\times x^{\frac{n}{2}}$
+
+```js
+var xPow = function (x, n) {
+    if (n === 0) return 1;
+    if (n < 0) {
+        n = -n;
+        x = 1 / x;
+    }
+    return (n % 2 === 0) ?
+        xPow(x * x, n / 2) :
+    	x * xPow(x * x, parseInt(n / 2));
+}
+```
+
+#### 2、求 $\sqrt{x}$
+
+使用二分法。
+
+```js
+var xSqrt = function (x) {
+    let l = 0, r = x;
+    while (true) {
+        let mid = l + parseInt(l + (r - l) / 2);
+        if (mid * mid > x) {
+            r = mid - 1;
+        } else if (mid * mid < x) {
+            if ( (mid + 1) * (mid + 1) > x )  return mid;
+            l = mid + 1;
+        } else return mid;
+    }
+}
+```
+
+
+
+#### 十、二进制问题
+
+一般用按位运算符和二进制转换 `Number.parseInt()` 和 `Number.prototype.toString()` 解决。
+
+#### 1、将一个32位数字的二进制进行倒序
+
+**利用库函数：**
+
+```js
+var reverseBits = function(n) {
+    let t = n.toString(2).split("");	// 转为数组
+    while (t.length < 32) t.unshift("0");  // 数组头部添0凑够32位
+    return parseInt(t.reverse().join(""), 2);
+}
+```
+
+**位运算分治：**
+
+<img src="assets/image-20220129000208809.png" alt="image-20220129000208809" style="zoom:50%;" />
+
+- 若要翻转一个二进制串，可以将其均分成左右两部分，对每部分递归执行翻转操作，然后将左半部分拼在右半部分的后面，即完成了翻转。
+
+
+- 由于左右两部分的计算方式是相似的，利用位掩码和位移运算，我们可以自底向上地完成这一分治流程。
+
+
+- 对于递归的最底层，我们需要交换所有奇偶位：
+  - 取出所有奇数位和偶数位；
+  - 将奇数位移到偶数位上，偶数位移到奇数位上。
+  - 类似地，对于倒数第二层，每两位分一组，按组号取出所有奇数组和偶数组，然后将奇数组移到偶数组上，偶数组移到奇数组上。以此类推。
+
+- 需要注意的是，在某些语言（如 Java）中，没有无符号整数类型，因此对 n 的右移操作应使用逻辑右移。
+
+
+```js
+var reverseBits = function(n) {
+    const M1 = 0x55555555; // 01010101010101010101010101010101
+    const M2 = 0x33333333; // 00110011001100110011001100110011
+    const M4 = 0x0f0f0f0f; // 00001111000011110000111100001111
+    const M8 = 0x00ff00ff; // 00000000111111110000000011111111
+
+    // >>> 为以0填充的右位移
+    n = n >>> 1 & M1 | (n & M1) << 1;
+    n = n >>> 2 & M2 | (n & M2) << 2;
+    n = n >>> 4 & M4 | (n & M4) << 4;
+    n = n >>> 8 & M8 | (n & M8) << 8;
+    return (n >>> 16 | n << 16) >>> 0;
 };
 ```
 
