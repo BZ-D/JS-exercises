@@ -1022,3 +1022,33 @@ function radixSort(arr, maxDigit) {
 }
 ```
 
+
+
+### 八、排序例题
+
+<img src="assets/image-20220128111116494.png" alt="image-20220128111116494" style="zoom: 67%;" />
+
+思路：
+
+- 将properties数组中的元素进行排序，排序规则：优先以降序排列攻击力，若攻击力相同，则以升序排列防御力
+- 从头开始遍历排序后的properties数组，并记录当前时刻遍历到的最大防御力值，因为攻击力是按降序排序，因此遍历到每个元素时只需要比较该元素的防御力与最大防御力值，若小于，则当前元素为一个弱角色
+- 当遍历到连续多个攻击力相同的元素时，为了避免将它们中防御力较小的那些元素误计入结果中，因此先前排序时需要以升序排列防御力，这样保证了最大防御力值（若发生更新）会在一系列攻击力相同的角色的最后一个（即防御力最大的那个）处更新
+
+```js
+var numberOfWeakCharacters = function(properties) {
+    properties.sort((o1, o2) => {
+        return o1[0] === o2[0] ? (o1[1] - o2[1]) : (o2[0] - o1[0]);
+    });
+    let maxDef = 0;
+    let ans = 0;
+    for (const p of properties) {
+        if (p[1] < maxDef) {
+            ans++;
+        } else {
+            maxDef = p[1];
+        }
+    }
+    return ans;
+};
+```
+
