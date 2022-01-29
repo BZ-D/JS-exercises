@@ -191,3 +191,185 @@ function changeOneChar(wordA, wordB) {
 }
 ```
 
+#### 4、单源BFS和多源BFS
+
+**例题1：地图分析**
+
+<img src="assets/image-20220129120924298.png" alt="image-20220129120924298" style="zoom:67%;" />
+
+<img src="assets/image-20220129120941856.png" alt="image-20220129120941856" style="zoom:67%;" />
+
+**思路1 - 单源BFS：**
+
+从某起点出发，求解到达终点的最短距离。对于本题，如果套用单源最短路方法，需要对每个「海洋」位置做一次BFS，求得每个「海洋」的最近陆地距离，然后在所有距离中取「max」作为答案。
+
+单次BFS的最坏情况是需要扫描完整个矩阵，复杂度为 $O(n^2)$。
+
+同时，最多有 $n^2$ 个海洋区域需要做BFS，因此此做法复杂度为 $O(n^4)$，且可以直接取满，复杂度较高。
+
+一些细节：为了方便，我们在使用哈希表记录距离时，将二维坐标 $(x,y)$ 转化为对应的一维下标 $idx = x\times n+y$ 进行存储。
+
+```js
+var dirs = [ [1,0], [-1,0], [0,1], [0,-1] ];
+var grid, n;
+
+var maxDistance = function (_grid) {
+    grid = _grid;
+    n = _grid.length;
+    let ans = -1;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] === 0) {
+                // 海洋处
+                ans = Math.max(ans, bfs(i, j));
+            }
+        }
+    }
+    return ans;
+};
+
+// 单源BFS：求解海洋位置(x,y)最近的陆地距离
+function bfs(x, y) {
+    let map = new Map(),  // 用于记录映射：(x,y) -> distanceToLand，兼标记功能
+        set = new Set();  // 用于模拟队列
+    
+    set.add([x, y]);  // 当前海洋坐标入队
+    map.set(x * n + y, 0);  // 标记
+    while (set.size !== 0) {
+        let tmp = new Set([...set]);
+
+        for (let poll of tmp) {
+            set.delete(poll);  // 出队
+            let dx = poll[0], dy = poll[1];
+            let step = map.get(dx * n + dy);
+            
+            if (grid[dx][dy] === 1)  return step;
+            
+            for (let di of dirs) {
+                // 东西南北的邻接点
+                let nx = dx + di[0], ny = dy + di[1];
+                if (nx < 0 || nx >= n || ny < 0 || ny >= n) continue;
+                let key = nx * n + ny;
+                if (map.has(key)) continue; // 跳过已遍历点
+                set.add([nx, ny]);  // 否则邻接点入队
+                map.set(key, step + 1);  // 标记已遍历并添加映射
+            }
+        }
+    }
+    return -1;
+}
+```
+
+**思路2 - 多源BFS：**
+
+与单源最短路不同，多源最短路是从「多个源点」到达「一个/多个汇点」的最短路径。核心搜索部分并无区别，并可以通过建立「虚拟源点」的方式，将多源BFS转换回单源BFS问题。
+
+以本题为例，可以将「源点」和「汇点」进行反转：**从每个「陆地」区域出发，多个「陆地」区域每次同时向外扩散一圈，每个「海洋」区域首次被覆盖时所对应的圈数，就是「海洋」区域距离最近的陆地区域的距离。**
+
+![image-20220129203352035](assets/image-20220129203352035.png)
+
+可以想象存在一个「虚拟源点」，它与所有「真实源点」（陆地）存在等权的边，那么任意「海洋」区域与最近的陆地区域的最短路等价于与「虚拟源点」的最短路：
+
+<img src="assets/image-20220129203829161.png" alt="image-20220129203829161" style="zoom:67%;" />
+
+实现上，不需要建立虚拟源点，只需要在BFS前将所有「真实源点」进行入队即可。这个过程相当于从队列中弹出「虚拟源点」，并把它相邻的所有「真实源点」（所有陆地点）进行入队，然后进行常规的BFS。
+
+一些细节：为了实现上方便，在进行常规BFS时，如果一个「海洋」区域被访问到，说明它被离它最近的「陆地」覆盖到了，修改值为最小距离。这样只需考虑那些值仍然为 0 的海洋区域即可。
+
+时间复杂度、空间复杂度：$O(n^2)$
+
+```js
+var dirs = [ [1,0], [-1,0], [0,1], [0,-1] ];
+var grid, n;
+
+var maxDistance = function (_grid) {
+    grid = _grid;
+    n = _grid.length;
+    let set = new Set(),
+        map = new Map();
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] === 1) {
+                set.add([i, j]);
+                map.set(i * n + j, 0);
+            }
+        }
+    }
+    
+    let ans = -1;
+    while (set.size !== 0) {
+        let tmp = new Set([...set]);
+
+        for (let poll of tmp) {
+            set.delete(poll);  // 从队列中删除，并标记为已访问
+            let dx = poll[0], dy = poll[1];
+            let step = map.get(dx * n + dy);
+			
+            for (let di of dirs) {
+				let nx = dx + di[0], ny = dy + di[1];
+                if (nx < 0 || nx >= n || ny < 0 || ny >= n) continue;
+                if (grid[nx][ny] !== 0) continue;
+                grid[nx][ny] = step + 1;
+                set.add([nx, ny]);
+                map.set(nx * n + ny, step + 1);
+                ans = Math.max(ans, step + 1);
+            }
+        }
+    }
+    
+    return ans;
+};
+```
+
+
+
+**例题2：地图中的最高点**
+
+<img src="assets/image-20220129205721380.png" alt="image-20220129205721380" style="zoom:67%;" />
+
+<img src="assets/image-20220129205735914.png" alt="image-20220129205735914" style="zoom:67%;" />
+
+<img src="assets/image-20220129205748832.png" alt="image-20220129205748832" style="zoom:67%;" />
+
+水域区域高度为0，相邻格子高度差最多为1，可以将所有水域区域入队，然后跑一边BFS（多源）即可。将所有水域区域进行入队的操作可看做是将与「虚拟源点」链接的节点进行入队。
+
+<img src="assets/image-20220129210027975.png" alt="image-20220129210027975" style="zoom:67%;" />
+
+对于一个陆地区域而言，它能填入的高度，取决于其与其他水域区域的距离，每个陆地区域应该取其能填入高度的下界，即只由距离它最近的水域区域更新。
+
+```js
+var dirs = [ [1,0], [-1,0], [0,1], [0,-1] ];
+var highestPeak = function (g) {
+    let m = g.length, n = g[0].length;
+    let ans = [],
+        set = new Set();
+    
+    for (let i = 0; i < m; i++) {
+        ans.push(new Array(n));
+    }
+    
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (g[i][j] === 1)  set.add([i, j]);  // 所有水域格子入队
+            ans[i][j] = g[i][j] === 1 ? 0 : -1;
+        }
+    }
+    
+    while (set.size !== 0) {
+        let tmp = new Set([...set]);
+        for (let poll of tmp) {
+            set.delete(poll);
+            let dx = poll[0], dy = poll[1];
+            for (let dir of dirs) {
+                let nx = dx + dir[0], ny = dy + dir[1];
+                if (nx < 0 || nx >= m || ny < 0 || ny >= n) continue;
+                if (ans[nx][ny] !== -1) continue;
+                ans[nx][ny] = ans[dx][dy] + 1;
+                set.add([nx, ny]);
+            }
+        }
+    }
+    return ans;
+}
+```
+
