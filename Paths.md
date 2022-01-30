@@ -264,6 +264,8 @@ function bfs(x, y) {
 
 与单源最短路不同，多源最短路是从「多个源点」到达「一个/多个汇点」的最短路径。核心搜索部分并无区别，并可以通过建立「虚拟源点」的方式，将多源BFS转换回单源BFS问题。
 
+**多源就是要从坐标值已知且固定的那些「真实源点」出发。**
+
 以本题为例，可以将「源点」和「汇点」进行反转：**从每个「陆地」区域出发，多个「陆地」区域每次同时向外扩散一圈，每个「海洋」区域首次被覆盖时所对应的圈数，就是「海洋」区域距离最近的陆地区域的距离。**
 
 ![image-20220129203352035](assets/image-20220129203352035.png)
@@ -331,7 +333,7 @@ var maxDistance = function (_grid) {
 
 <img src="assets/image-20220129205748832.png" alt="image-20220129205748832" style="zoom:67%;" />
 
-水域区域高度为0，相邻格子高度差最多为1，可以将所有水域区域入队，然后跑一边BFS（多源）即可。将所有水域区域进行入队的操作可看做是将与「虚拟源点」链接的节点进行入队。
+水域区域高度为0，相邻格子高度差最多为1，可以将所有水域区域入队，然后跑一遍BFS（多源）即可。将所有水域区域进行入队的操作可看做是将与「虚拟源点」链接的节点进行入队。
 
 <img src="assets/image-20220129210027975.png" alt="image-20220129210027975" style="zoom:67%;" />
 
@@ -351,21 +353,22 @@ var highestPeak = function (g) {
     for (let i = 0; i < m; i++) {
         for (let j = 0; j < n; j++) {
             if (g[i][j] === 1)  set.add([i, j]);  // 所有水域格子入队
-            ans[i][j] = g[i][j] === 1 ? 0 : -1;
+            ans[i][j] = g[i][j] === 1 ? 0 : -1;	  // ans兼有记录结果和标记已遍历的作用
         }
     }
     
     while (set.size !== 0) {
         let tmp = new Set([...set]);
         for (let poll of tmp) {
-            set.delete(poll);
+            set.delete(poll);	// 出队
             let dx = poll[0], dy = poll[1];
             for (let dir of dirs) {
+                // 找邻接点
                 let nx = dx + dir[0], ny = dy + dir[1];
                 if (nx < 0 || nx >= m || ny < 0 || ny >= n) continue;
-                if (ans[nx][ny] !== -1) continue;
-                ans[nx][ny] = ans[dx][dy] + 1;
-                set.add([nx, ny]);
+                if (ans[nx][ny] !== -1) continue;  // 已访问过则直接跳过
+                ans[nx][ny] = ans[dx][dy] + 1;	   // 邻接点必然比上一个点的高度大1
+                set.add([nx, ny]);  // 邻接点入队
             }
         }
     }
