@@ -199,6 +199,148 @@ Array.prototype.map = function(callback, thisArg) {
             res[i] = callback.call(thisArg, O[i], i, this);
         }
     }
+    return res;
+}
+```
+
+
+
+#### Array.prototype.forEach()
+
+```js
+参数：
+callback：为数组中每个元素执行的函数，接受一到三个参数：
+1）currentValue
+2）index，可选，当前处理元素的索引
+3）array，正在操作的数组
+
+thisArg：可选，用作this
+```
+
+```js
+Array.prototype.forEach = function(callback, thisArg) {
+    if (this == null) {
+        throw new TypeError('this is null or undefined');
+    }
+    if (typeof callback !== 'function') {
+        throw new TypeError(callback + ' is not a function');
+    }
+    const O = Object(this);
+    const len = O.length >>> 0;
+    let k = 0;
+    while (k < len) {
+        if (k in O) {
+            callback.call(thisArg, O[k], k, O);
+        }
+        k++;
+    }
+}
+```
+
+
+
+#### Array.prototype.reduce()
+
+```js
+参数：
+callback，包含四个参数：
+1）accumulator，累计器累计回调的返回值
+2）currentValue
+3）index：可选，索引
+4）array：可选，调用reduce的数组
+
+initialValue：可选，第一个参数值
+```
+
+```js
+Array.prototype.reduce = function(callback, initialValue) {
+    if (this == undefined) {
+        throw new TypeError('this is null or not defined');
+    }
+    if (typeof callback !== 'function') {
+        throw new TypeError(callback + ' is not a function');
+    }
+    const O = Object(this);
+    const len = this.length >>> 0;
+    let accumulator = initialValue;
+    let k = 0;
+    
+    // 如果第二个参数initialValue为undefined，则数组第一个有效值作为累计器初值
+    if (accumulator === undefined) {
+        while (k < len && !(k in O)) {
+            k++;
+        }
+        // 如果超出数组界限还没找到累加器初始值，抛出异常
+        if (k >= len) {
+            throw new TypeError('Reduce of empty array with no initial value');
+        }
+        accumulator = O[k++];
+    }
+    
+    while (k < len) {
+        if (k in O) {
+            accumulator = callback(accumulator, O[k], k, O);
+        }
+        k++;
+    }
+    return accumulator;
+}
+```
+
+
+
+#### Function.prototype.apply()
+
+```js
+第一个参数是绑定的this，默认为window，第二个参数是数组或类数组
+Function.prototype.apply = function(context = window, args) {
+    if (typeof this !== 'function') {
+        throw new TypeError('Type Error');
+    }
+    // Symbol是ES6新增的数据类型，可以作为对象的属性标识符使用
+    const fn = Symbol('fn');
+    context[fn] = this;
+    const res = context[fn](...args);
+    delete context[fn];
+    return res;
+}
+```
+
+
+
+#### Function.prototype.call
+
+```js
+Function.prototype.call = function(context = window, ...args) {
+    // 接受参数列表...args
+    if (typeof this !== 'function') {
+        throw new TypeError('Type Error');
+    }
+    const fn = Symbol('fn');
+    context[fn] = this;
+    
+    const res = context[fn](...args);
+    delete context[fn];
+    return res;
+}
+```
+
+
+
+#### Function.prototype.bind
+
+```js
+Function.prototype.bind = function(context, ...args) {
+	if (typeof this !== 'function') {
+		throw new TypeError('Type Error');
+	}
+    var self = this;
+    return function F() {
+        if (this instanceof F) {
+            return new self(...args, ...arguments);
+        }
+        return self.apply(context, [...args, ...arguments]);
+    }
 }
 ```
 
