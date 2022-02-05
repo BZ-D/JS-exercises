@@ -376,3 +376,47 @@ var highestPeak = function (g) {
 }
 ```
 
+
+
+#### 5、回溯
+
+<img src="assets/image-20220205122603890.png" alt="image-20220205122603890" style="zoom:67%;" />
+
+对每个非 0 元素进行回溯 DFS，找到最大的采矿路径。
+
+```js
+/**
+ * @param {number[][]} grid
+ * @return {number}
+ */
+
+var getMaximumGold = function(grid) {
+    const m = grid.length, n = grid[0].length;
+    this.grid = grid;
+    this.ans = 0;
+    this.dirs = [[-1,0],[1,0],[0,-1],[0,1]]
+
+    const dfs = function (i, j, sum) {
+        sum = grid[i][j] + sum;
+        ans = Math.max(ans, sum);
+        let tmp = grid[i][j];
+        grid[i][j] = 0;
+        for (let di of dirs) {
+            const ni = i + di[0], nj = j + di[1];
+            if (ni >= 0 && nj >= 0 && ni < m && nj < n && grid[ni][nj] > 0) {
+                dfs(ni, nj, sum);
+            }
+        }
+        grid[i][j] = tmp;
+    }
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (grid[i][j] !== 0) dfs(i, j, 0);
+        }
+    }
+
+    return ans;
+};
+```
+
