@@ -380,6 +380,8 @@ var highestPeak = function (g) {
 
 #### 5、回溯
 
+**例题1：**
+
 <img src="assets/image-20220205122603890.png" alt="image-20220205122603890" style="zoom:67%;" />
 
 对每个非 0 元素进行回溯 DFS，找到最大的采矿路径。
@@ -417,6 +419,47 @@ var getMaximumGold = function(grid) {
     }
 
     return ans;
+};
+```
+
+
+
+**例题2：**
+
+<img src="assets/image-20220206131709303.png" alt="image-20220206131709303" style="zoom:67%;" />
+
+DFS 递归搜索：
+
+```js
+var letterCombinations = function(digits) {
+    if (digits.length === 0) return [];
+
+    let res = [];
+    const map = new Map([
+        ['2', 'abc'],
+        ['3', 'def'],
+        ['4', 'ghi'],
+        ['5', 'jkl'],
+        ['6', 'mno'],
+        ['7', 'pqrs'],
+        ['8', 'tuv'],
+        ['9', 'wxyz']
+    ]);
+
+    const dfs = (i, curStr) => {
+        if (i > digits.length - 1) {
+            res.push(curStr);
+            return;
+        }
+        const letters = map.get(digits[i]);
+        for (let letter of letters) {
+            dfs(i + 1, curStr + letter);
+        }
+    }
+
+    dfs(0, '');
+
+    return res;
 };
 ```
 

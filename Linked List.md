@@ -65,3 +65,35 @@ var reverseList = function (head) {
 };
 ```
 
+#### 3、双指针法
+
+<img src="assets/image-20220206133804497.png" alt="image-20220206133804497" style="zoom:67%;" />
+
+```js
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+var removeNthFromEnd = function(head, n) {
+    const dummy = new ListNode(0, head);
+    let first = head;
+    let second = dummy;
+
+    // 让右指针领先左指针n步，这样当右指针到头时，左指针指向的节点.next即为要删除的倒数第N个节点
+    for (let i = 0; i < n; i++) {
+        first = first.next;
+    }
+
+    while (first !== null) {
+        first = first.next;
+        second = second.next;
+    }
+
+    second.next = second.next.next;
+    return dummy.next;
+};
+```
+
