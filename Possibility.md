@@ -338,3 +338,43 @@ var maxSubArray = function (nums) {
 ```
 
 通过不断对比最大值并保存最大值。
+
+#### 4、接雨水
+
+<img src="assets/image-20220211214300259.png" alt="image-20220211214300259" style="zoom:67%;" />
+
+<img src="assets/image-20220211214628463.png" alt="image-20220211214628463" style="zoom:67%;" />
+
+维护两个数组left_max和right_max，用于记录每个位置的左侧柱子最高高度和右侧柱子最高高度，则当前位置可以接的雨水量为：
+
+$左右侧柱子最高高度的较小值\ -\ 当前位置的柱子高度$
+
+```js
+/**
+ * @param {number[]} height
+ * @return {number}
+ */
+var trap = function(height) {
+    let left_max = new Array(height.length), right_max = new Array(height.length);
+    let ans = 0;
+    // 动态规划数组初始值为最左侧和最右侧柱子的高度
+    left_max[0] = height[0];
+    right_max[height.length - 1] = height[height.length - 1];
+
+    // 初始化左侧柱子最高值数组
+    for (let i = 1; i < height.length; i++) {
+        left_max[i] = Math.max(height[i], left_max[i - 1]);
+    }
+	// 初始化右侧柱子最高值数组
+    for (let i = height.length - 2; i >= 0; i--) {
+        right_max[i] = Math.max(height[i], right_max[i + 1]);
+    }
+	// 位置i可以接到的雨水量为左右侧最高高度的较小值减去当前柱子高度
+    for (let i = 0; i < height.length; i++) {
+        ans += Math.min(left_max[i], right_max[i]) - height[i];
+    }
+
+    return ans;
+};
+```
+
