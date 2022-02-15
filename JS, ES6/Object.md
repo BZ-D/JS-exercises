@@ -467,7 +467,29 @@ null
 - 两个静态方法
   - stringify()：将一个值转为 JSON 字符串，并且可以被 JSON.parse() 方法还原
     - 注意：对原始类型的字符串，转换结果会带双引号：`JSON.stringify('foo') === "\"foo\""`
+    
     - 会自动过滤 undefined、函数属性或 XML 对象
+    
     - 对数组使用此方法，如果数组成员为 undefined、函数或 XML 对象，将它们转化为 null
+    
     - 正则对象会转为空对象：JSON.stringify(/foo/)  =>  {}
+    
     - 该方法还可以接受一个数组作为第二个参数，指定对象哪些属性需要转为字符串
+    
+      ```js
+      var obj = {
+        'prop1': 'value1',
+        'prop2': 'value2',
+        'prop3': 'value3'
+      };
+      
+      var selectedProperties = ['prop1', 'prop2'];
+      
+      JSON.stringify(obj, selectedProperties)
+      // "{"prop1":"value1","prop2":"value2"}"
+      ```
+    
+    - 第二个参数还可以是一个函数，用来更改 stringify 的返回值，此处理函数是递归处理所有的键
+    
+  - parse()：将JSON字符串转换为对应的值
+
