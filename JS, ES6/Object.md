@@ -61,20 +61,177 @@
 
 #### Object 对象
 
-- Object() 方法可用于将任意值转换为对象
+- 静态方法
 
-  - var a = 1;  Object(a)  =>  {1}
-  - 判断一个变量是否为对象：`value === Object(value)`
+  - Object() 方法可用于将任意值转换为对象
 
-- Object() 方法可用于创建新对象
+    - var a = 1;  Object(a)  =>  {1}
+    - 判断一个变量是否为对象：`value === Object(value)`
 
-  - var obj = new Object();
-  - 等价于 var obj = {};
+  - Object() 方法可用于创建新对象
 
-- Object.keys() 和 Object.getOwnPropertyNames()
+    - var obj = new Object();
+    - 等价于 var obj = {};
 
-  - 都可以用于遍历对象属性，一般情况下返回值为一个含有该对象自身（不含继承的）属性名的数组。但后者可以遍历到 **不可遍历属性**：如遍历一个数组时，会遍历到其 `length` 属性
-  - 可以使用 `Object.keys(obj).length` 或 `Object.getOwnPropertyNames(obj).length` 获取对象中属性的个数
+  - Object.keys() 和 Object.getOwnPropertyNames()
+
+    - 都可以用于遍历对象属性，一般情况下返回值为一个含有该对象自身（不含继承的）属性名的数组。但后者可以遍历到 **不可遍历属性**：如遍历一个数组时，会遍历到其 `length` 属性
+    - 可以使用 `Object.keys(obj).length` 或 `Object.getOwnPropertyNames(obj).length` 获取对象中属性的个数
+
+  - Object.getPrototypeOf()：返回参数对象的原型，是获得原型对象的标准方法
+
+    ```js
+    var F = function () {}
+    var f = new F();
+    Object.getPrototypeOf(f)  // F.prototype
+    Object.getPrototypeOf({})  // Object.prototype
+    Object.getPrototypeOf(Object.prototype)  // null
+    Object.getPrototypeOf(function f() {})  // Function.prototype
+    ```
+
+  - Object.setPrototypeOf()：为参数对象设置原型，并返回该参数对象，接受两个参数，第一个是现有对象，第二个是原型对象：
+
+    ```js
+    var a = {};
+    var b = {x: 1};
+    Object.setPrototypeOf(a, b);
+    
+    Object.getPrototypeOf(a) === b // true
+    a.x // 1
+    ```
+
+    上面代码中，`Object.setPrototypeOf`方法将对象`a`的原型，设置为对象`b`，因此`a`可以共享`b`的属性。
+
+    `new`命令可以使用`Object.setPrototypeOf`方法模拟。
+
+    ```js
+    var F = function () {
+      this.foo = 'bar';
+    };
+    
+    var f = new F();
+    // 等同于
+    var f = Object.setPrototypeOf({}, F.prototype);
+    F.call(f);
+    ```
+
+    上面代码中，`new`命令新建实例对象，其实可以分成两步。第一步，将一个空对象的原型设为构造函数的`prototype`属性（上例是`F.prototype`）；第二步，将构造函数内部的`this`绑定这个空对象，然后执行构造函数，使得定义在`this`上面的方法和属性（上例是`this.foo`），都转移到这个空对象上。
+
+  - **Object.create()**：常用于由一个实例对象生成另外一个实例对象
+
+    该方法接受一个对象作为参数，然后以它为原型，返回一个实例对象。该实例完全继承原型对象的属性。
+
+    ```js
+    // 原型对象
+    var A = {
+      print: function () {
+        console.log('hello');
+      }
+    };
+    
+    // 实例对象
+    var B = Object.create(A);
+    
+    Object.getPrototypeOf(B) === A // true
+    B.print() // hello
+    B.print === A.print // true
+    ```
+
+    上面代码中，`Object.create()`方法以`A`对象为原型，生成了`B`对象。`B`继承了`A`的所有属性和方法。
+
+    实际上，`Object.create()`方法可以用下面的代码代替。**手写 Object.create：**
+
+    ```js
+    if (typeof Object.create !== 'function') {
+      Object.create = function (obj) {
+        function F() {}
+        F.prototype = obj;
+        return new F();
+      };
+    }
+    ```
+
+    上面代码表明，`Object.create()`方法的实质是新建一个空的构造函数`F`，然后让`F.prototype`属性指向参数对象`obj`，最后返回一个`F`的实例，从而实现让该实例继承`obj`的属性。
+
+    下面三种方式生成的新对象是等价的。
+
+    ```js
+    var obj1 = Object.create({});
+    var obj2 = Object.create(Object.prototype);
+    var obj3 = new Object();
+    ```
+
+    如果想要生成一个不继承任何属性（比如没有`toString()`和`valueOf()`方法）的对象，可以将`Object.create()`的参数设为`null`。
+
+    ```js
+    var obj = Object.create(null);
+    
+    obj.valueOf()
+    // TypeError: Object [object Object] has no method 'valueOf'
+    ```
+
+    上面代码中，对象`obj`的原型是`null`，它就不具备一些定义在`Object.prototype`对象上面的属性，比如`valueOf()`方法。
+
+    使用`Object.create()`方法的时候，**必须提供对象原型，即参数不能为空，或者不是对象，否则会报错**。
+
+    ```js
+    Object.create()
+    // TypeError: Object prototype may only be an Object or null
+    Object.create(123)
+    // TypeError: Object prototype may only be an Object or null
+    ```
+
+    `Object.create()`方法生成的新对象，动态继承了原型。**在原型上添加或修改任何方法，会立刻反映在新对象之上**。
+
+    ```js
+    var obj1 = { p: 1 };
+    var obj2 = Object.create(obj1);
+    
+    obj1.p = 2;
+    obj2.p // 2
+    ```
+
+    上面代码中，修改对象原型`obj1`会影响到实例对象`obj2`，反过来不会。
+
+    除了对象的原型，`Object.create()`方法还可以接受第二个参数。该参数是一个**属性描述对象**，它所描述的对象属性，会添加到实例对象，作为该对象自身的属性。
+
+    ```js
+    var obj = Object.create({}, {
+      p1: {
+        value: 123,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      },
+      p2: {
+        value: 'abc',
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      }
+    });
+    
+    // 等同于
+    var obj = Object.create({});
+    obj.p1 = 123;
+    obj.p2 = 'abc';
+    ```
+
+    `Object.create()`方法生成的对象，**继承了它的原型对象的构造函数**。
+
+    ```js
+    function A() {}
+    var a = new A();
+    var b = Object.create(a);
+    
+    b.constructor === A // true
+    b instanceof A // true
+    b.__proto__ === a  // true
+    ```
+
+    上面代码中，`b`对象的原型是`a`对象，因此继承了`a`对象的构造函数`A`。
+
+  
 
 - 实例方法
 
@@ -89,6 +246,62 @@
   - Object.prototype.toLocaleString()：与 toString 返回结果相同，主要作用是留出一个接口，让各种不同对象实现自己版本的 toLocaleString
 
   - Object.prototype.hasOwnProperty()：接受一个字符串作为参数，返回一个布尔值，表示该实例对象自身是否具有该属性。`obj.hasOwnProperty('p')`
+  
+  - Object.prototype.isPrototypeOf()：用来判断某对象是否为参数对象的原型。由于 Object.prototype 处于原型链最顶端，对各种实例都返回 true，只有直接继承自 null 的对象除外
+
+
+
+- **Object.prototype.\_\_proto\_\_** 实例对象的属性：
+
+  实例对象的`__proto__`属性（前后各两个下划线），返回该对象的原型。该属性可读写。
+
+  ```js
+  var obj = {};
+  var p = {};
+  
+  obj.__proto__ = p;
+  Object.getPrototypeOf(obj) === p // true
+  ```
+
+  上面代码通过`__proto__`属性，将`p`对象设为`obj`对象的原型。
+
+  根据语言标准，`__proto__`属性只有浏览器才需要部署，其他环境可以没有这个属性。它前后的两根下划线，表明它本质是一个内部属性，不应该对使用者暴露。因此，应该尽量少用这个属性，而是用`Object.getPrototypeOf()`和`Object.setPrototypeOf()`，进行原型对象的读写操作。
+
+  原型链可以用`__proto__`很直观地表示。
+
+  ```js
+  var A = {
+    name: '张三'
+  };
+  var B = {
+    name: '李四'
+  };
+  
+  var proto = {
+    print: function () {
+      console.log(this.name);
+    }
+  };
+  
+  A.__proto__ = proto;
+  B.__proto__ = proto;
+  
+  A.print() // 张三
+  B.print() // 李四
+  
+  A.print === B.print // true
+  A.print === proto.print // true
+  B.print === proto.print // true
+  ```
+
+  上面代码中，`A`对象和`B`对象的原型都是`proto`对象，它们都共享`proto`对象的`print`方法。也就是说，`A`和`B`的`print`方法，都是在调用`proto`对象的`print`方法。
+
+
+
+- 获取原型对象方法的比较
+  1. `obj.__proto__`：该属性只有浏览器才需要部署，其他环境下可以不部署
+  2. `obj.constructor.prototype`：在手动改变原型对象时可能会失效，需要同时设置 constructor 属性
+  3. `Object.getPrototypeOf(obj)`：推荐使用
 
 
 
@@ -155,11 +368,37 @@
 
 #### 对象的拷贝
 
-使用 `Object.defineProperty` 方法拷贝属性，避免出现遇到存取器定义只会拷贝值的情况
+如果要拷贝一个对象，需要做到下面两件事情：
+
+- 确保拷贝后的对象与源对象具有同样的原型
+- 确保拷贝后的对象与源对象具有同样的实例属性
+
+```js
+function copyObject(orig) {
+  // 绑定原型
+  var copy = Object.create(Object.getPrototypeOf(orig));
+  copyOwnPropertiesFrom(copy, orig);
+  return copy;
+}
+
+function copyOwnPropertiesFrom(target, source) {
+  // 拷贝实例属性
+  Object
+    .getOwnPropertyNames(source)
+    .forEach(function (propKey) {
+      var desc = Object.getOwnPropertyDescriptor(source, propKey);
+      Object.defineProperty(target, propKey, desc);
+    });
+  return target;
+}
+```
+
+使用 `Object.defineProperty` 方法拷贝属性，避免出现遇到存取器定义只会拷贝值的情况。上面也可以写为下面的代码：
 
 ```js
 var extend = function (to, from) {
   for (var property in from) {
+    // 使用 for...in 遍历对象时，最好判断一下是否是对象自身的属性
     if (!from.hasOwnProperty(property)) continue;
     Object.defineProperty(
       to,
@@ -173,6 +412,17 @@ var extend = function (to, from) {
 
 extend({}, { get a(){ return 1 } })
 // { get a(){ return 1 } })
+```
+
+另一种更简单的写法，是利用 ES2017 才引入标准的`Object.getOwnPropertyDescriptors`方法。
+
+```js
+function copyObject(orig) {
+  return Object.create(
+    Object.getPrototypeOf(orig),
+    Object.getOwnPropertyDescriptors(orig)
+  );
+}
 ```
 
 
