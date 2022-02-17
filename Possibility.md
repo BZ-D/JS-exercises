@@ -378,3 +378,38 @@ var trap = function(height) {
 };
 ```
 
+#### 5、骑士停留问题
+
+<img src="assets/image-20220217125949283.png" alt="image-20220217125949283" style="zoom:67%;" />
+
+<img src="assets/image-20220217130004071.png" alt="image-20220217130004071" style="zoom:67%;" />
+
+```js
+const dirs = [[-2, -1], [-2, 1], [2, -1], [2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2]];
+var knightProbability = function(n, k, row, column) {
+    // dp[step][i][j]：从点(i,j)出发，走了step步仍留在棋盘上的概率
+    // dp[step][i][j] = 0.025 * Σ(dp[step - 1][i+di][j+dj])
+    const dp = new Array(k + 1).fill(0).map(() => new Array(n).fill(0).map(() => new Array(n).fill(0)));
+    for (let step = 0; step <= k; step++) {
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (step === 0) {
+                    // 初始时就在棋盘上
+                    dp[step][i][j] = 1;
+                } else {
+                    // 计算dp[step][i][j]
+                    for (const dir of dirs) {
+                        const ni = i + dir[0], nj = j + dir[1];
+                        if (ni >= 0 && ni < n && nj >= 0 && nj < n) {
+                            dp[step][i][j] += dp[step - 1][ni][nj] / 8;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return dp[k][row][column];
+};
+
+```
+
