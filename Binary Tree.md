@@ -96,3 +96,48 @@ var buildTree = function(preorder, inorder) {
 
 ```
 
+#### 4、树的子结构
+
+<img src="assets/image-20220218143017039.png" alt="image-20220218143017039" style="zoom: 95%;" />
+
+<img src="assets/image-20220218143325988.png" alt="image-20220218143325988" style="zoom:98%;" />
+
+![image-20220218143344098](assets/image-20220218143344098.png)
+
+```js
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val) {
+ *     this.val = val;
+ *     this.left = this.right = null;
+ * }
+ */
+/**
+ * @param {TreeNode} A
+ * @param {TreeNode} B
+ * @return {boolean}
+ */
+var isSubStructure = function(A, B) {
+    if (A === null || B === null) {
+        return false;
+    }
+
+    const recur = (A, B) => {
+        // 判断B是否是A的子结构，依次左右节点递归地对比
+        if (B === null) {
+            return true;
+        }
+        if (A === null) {
+            return false;
+        }
+        if (A.val === B.val) {
+            return recur(A.left, B.left) && recur(A.right, B.right);
+        } else {
+            return false;
+        }
+    }
+    // 对A和B先整体判断是否是子结构，再递归地判断A的左子树和A的右子树
+    return recur(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B);
+};
+```
+
