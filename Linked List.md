@@ -97,3 +97,45 @@ var removeNthFromEnd = function(head, n) {
 };
 ```
 
+#### 4、复杂链表的深拷贝
+
+<img src="assets/image-20220219143907214.png" alt="image-20220219143907214" style="zoom:67%;" />
+
+**重点：**
+
+- 深拷贝，对每个节点都要重新 new 一个新节点
+- 含有 random 属性，在所有节点都遍历完之前，没法获知每个节点的 random 信息，可能出现第一个节点的 random 指向最后一个节点，但此时最后一个新节点并没有 new 出来
+
+**思路：**
+
+- 哈希表，既然可能出现对 random 属性赋值时对应节点没 new 出来的情况，那第一遍遍历时干脆不处理 next 和 random 属性，而是先建立一个 `原节点 -> 新节点` 的映射表
+- 第二次遍历时，所需的 next 和 random 节点都已经在第一遍遍历中 new 出来了，直接根据映射关系赋值即可
+
+```js
+var copyRandomList = function(head) {
+    if (head === null) {
+        return null;
+    }
+
+    let node = head;
+    let map = new Map();
+    
+    // 先建立源节点->新节点的映射
+    while (node) {
+        map.set(node, new Node(node.val));
+        node = node.next;
+    }
+	
+    // 第二次遍历时即可赋值
+    node = head;
+    while (node) {
+        map.get(node).next = map.get(node.next) ? map.get(node.next) : null;
+        map.get(node).random = map.get(node.random) ? map.get(node.random) : null;
+        node = node.next;
+    }
+
+    return map.get(head);
+}
+
+```
+

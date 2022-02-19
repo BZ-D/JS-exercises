@@ -224,3 +224,58 @@ function recur (postorder, i, j) {
 }
 ```
 
+
+
+### 7、将BST转化为双向链表
+
+<img src="assets/image-20220219175917379.png" alt="image-20220219175917379" style="zoom:67%;" />
+
+**思路：**
+
+- 利用BST的性质，中序遍历后一定是升序数组，并符合双向链表的顺序要求
+
+- head节点指向BST中最小的节点，pre节点为当前节点的前序节点
+- 递归地进行中序遍历，直到找到最小值，此时pre还未赋值，将head指向最小节点
+- 对于每个非最小的节点，进行 `cur.left = pre;  pre.right = cur;  pre = cur;` 的转化关系
+- 最后，将 head.left 指向最后节点（此时为pre），将 pre.right 指向 head
+
+```js
+/**
+ * // Definition for a Node.
+ * function Node(val,left,right) {
+ *    this.val = val;
+ *    this.left = left;
+ *    this.right = right;
+ * };
+ */
+var treeToDoublyList = function(root) {
+    if (!root) return root;
+    let head, pre;
+    // cur.left = pre;  pre.right = cur;
+
+    function dfs(cur) {
+        // 中序遍历
+        if (!cur) return;
+
+        dfs(cur.left);
+
+        // 如果此时pre未被赋值，说明是BST中的最小节点，将head指向它
+        if (!pre) head = cur;
+        // 如果有pre节点，说明遍历到了非最小节点，将pre的后继设为cur
+        else pre.right = cur;
+		
+        // 将cur的前驱设为pre
+        cur.left = pre;
+        // 更新pre至cur
+        pre = cur;
+
+        dfs(cur.right);
+    }
+
+    dfs(root);
+    head.left = pre;
+    pre.right = head;
+    return head;
+};
+```
+
