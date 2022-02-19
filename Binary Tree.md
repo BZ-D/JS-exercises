@@ -22,6 +22,7 @@ var maxDepth = function (root) {
 ```
 
 ```js
+// 递归
 var levelOrder = function (root) {
     let ans = [];
     helper(root, ans, 0);
@@ -36,6 +37,31 @@ function helper(node, ans, i) {
     helper(node.left, ans, i+1);
     helper(node.right, ans, i+1);
 }
+
+// 迭代
+var levelOrder = function(root) {
+    if (root === null) return [];
+
+    let queue = [];
+    let ans = [];
+    queue.push(root);
+    
+    while (queue.length) {
+        let tmp = [];
+        let len = queue.length;
+
+        while (len--) {
+            let cur = queue.shift();
+            tmp.push(cur.val);
+            if (cur.left) queue.push(cur.left);
+            if (cur.right) queue.push(cur.right);
+        }
+
+        ans.push(tmp)
+    }
+
+    return ans;
+};
 ```
 
 #### 3、由前序和中序构建二叉树
@@ -94,5 +120,36 @@ var buildTree = function(preorder, inorder) {
   return func.call(func, 0, 0, inorder.length - 1);
 };
 
+```
+
+#### 4、镜像翻转二叉树
+
+<img src="assets/image-20220218192228108.png" alt="image-20220218192228108" style="zoom:67%;" />
+
+```js
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val) {
+ *     this.val = val;
+ *     this.left = this.right = null;
+ * }
+ */
+/**
+ * @param {TreeNode} root
+ * @return {TreeNode}
+ */
+var mirrorTree = function(root) {
+    if (root === null) {
+        return null;
+    }
+    // 对左右子树递归
+    const left = mirrorTree(root.left);
+    const right = mirrorTree(root.right);
+    // 将分治并镜像翻转后的两棵子树交换
+    root.left = right;
+    root.right = left;
+    
+    return root;
+}
 ```
 

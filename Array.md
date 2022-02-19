@@ -115,3 +115,98 @@ CQueue.prototype.deleteHead = function() {
  */
 ```
 
+
+
+#### 4、顺时针打印矩阵
+
+<img src="assets/image-20220218203215325.png" alt="image-20220218203215325" style="zoom:67%;" />
+
+```js
+/**
+ * @param {number[][]} matrix
+ * @return {number[]}
+ */
+var spiralOrder = function(matrix) {
+    if (matrix.length === 0) {
+        return [];
+    }
+
+    const m = matrix.length, n = matrix[0].length;
+    // 分别表示左右上下四个边界
+    let l = 0, r = n - 1, u = 0, d = m - 1;
+    let ans = [];
+
+    while (1) {
+        // 左到右
+        for (let i = l; i <= r; i++) ans.push(matrix[u][i]);
+        if (++u > d) break;
+        // 上到下
+        for (let i = u; i <= d; i++) ans.push(matrix[i][r]);
+        if (--r < l) break;
+        // 右到左
+        for (let i = r; i >= l; i--) ans.push(matrix[d][i]);
+        if (--d < u) break;
+        // 下到上
+        for (let i = d; i >= u; i--) ans.push(matrix[i][l]);
+        if (++l > r) break;
+    }
+
+    return ans;
+};
+```
+
+
+
+#### 5、煎饼排序
+
+<img src="assets/image-20220219120932923.png" alt="image-20220219120932923" style="zoom:67%;" />
+
+**思路：**
+
+类似冒泡排序，每次需要在现有数组 arr 中找出最大值，若其索引不在最后一位，则先将其交换到首位，再将其交换到末位（此交换过程中需要对子数组的所有元素进行倒转），然后从末位弹出此最大值，直到数组中无元素。
+
+```js
+/**
+ * @param {number[]} arr
+ * @return {number[]}
+ */
+var pancakeSort = function(arr) {
+  let ans = [];
+    
+  while (arr.length) {
+    let max = Number.MIN_SAFE_INTEGER;
+    let ind = -1;
+    // 找出当前最大值的索引
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] > max) {
+        ind = i;
+        max = arr[i];
+      }
+    }
+    // 最大值已经在最右侧，直接弹出
+    if (ind === arr.length - 1) {
+      arr.pop();
+      continue;
+    }
+    // 先把该最大值交换到首位，再将其交换到末位，然后弹出
+    ans.push(ind + 1);
+    ans.push(arr.length);
+    reverseArr(arr, 0, ind);
+    reverseArr(arr, 0, arr.length - 1);
+    arr.pop();
+  }
+  return ans;
+};
+
+function reverseArr(arr, fromInd, toInd) {
+  for (let i = fromInd; i <= (toInd - fromInd >> 1); i++) {
+    if (i !== toInd - i) {
+      // 奇数个元素时，最中间元素不必交换
+      arr[i] ^= arr[toInd - i];
+      arr[toInd - i] ^= arr[i];
+      arr[i] ^= arr[toInd - i];
+    }
+  }
+}
+```
+
