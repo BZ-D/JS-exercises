@@ -4,8 +4,8 @@
 
 - 累乘：$x\times x\times \dots\times x$
 - 转换为指数级增长：$2^9=2\times4^4=2\times16^2=2\times256=512$，对于 $x^n$：
-  - 若 n % 2 !== 0，即 n 为奇数，则 $x^n = x \times(x^2\times x^{\lfloor\frac{n}{2}\rfloor})$
-  - 否则，$x^n=x^2\times x^{\frac{n}{2}}$
+  - 若 n % 2 !== 0，即 n 为奇数，则 $x^n = x \times(x^{2^{{\lfloor\frac{n}{2}\rfloor}}})$
+  - 否则，$x^n=x^{2^{\frac{n}{2}}}$
   - 此即 **快速幂** 算法
 
 ```js
