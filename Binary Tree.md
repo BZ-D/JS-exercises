@@ -226,7 +226,7 @@ function recur (postorder, i, j) {
 
 
 
-### 7、将BST转化为双向链表
+#### 7、将BST转化为双向链表
 
 <img src="assets/image-20220219175917379.png" alt="image-20220219175917379" style="zoom:67%;" />
 
@@ -276,6 +276,80 @@ var treeToDoublyList = function(root) {
     head.left = pre;
     pre.right = head;
     return head;
+};
+```
+
+
+
+#### 8、序列化二叉树
+
+<img src="assets/image-20220219203558044.png" alt="image-20220219203558044" style="zoom:67%;" />
+
+**思路：**
+
+- BFS，层序遍历，利用队列进行辅助
+- 对于序列化函数，从根节点开始BFS，需要记录该二叉树的完整信息，因此每个null也要作为一个值放入res中
+- 对于反序列化函数，从根节点开始BFS，对每次出列的节点cur，为其添加左右节点（这时需要判断JSON.parse后得到的层序遍历节点数组的`arr[i]`元素是否为null，如果是null则跳过，否则为cur的左右节点进行创建赋值）
+
+```js
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val) {
+ *     this.val = val;
+ *     this.left = this.right = null;
+ * }
+ */
+
+/**
+ * Encodes a tree to a single string.
+ *
+ * @param {TreeNode} root
+ * @return {string}
+ */
+var serialize = function(root) {
+    // 常规层序遍历
+    if (root == null) return "[]"
+    let queue = [root], res = []
+    while(queue.length) {
+        let node = queue.shift()
+        if (node != null) {
+            queue.push(node.left)
+            queue.push(node.right)
+            res.push(node.val)
+        } else {
+            res.push(null)
+        }
+    }
+    return JSON.stringify(res)
+};
+
+/**
+ * Decodes your encoded data to tree.
+ *
+ * @param {string} data
+ * @return {TreeNode}
+ */
+var deserialize = function(data) {
+    if (data == '[]') return null
+    let arr = JSON.parse(data)
+    let root = new TreeNode(arr[0])
+    let queue = [root], i = 1
+    while(queue.length && i < arr.length) {
+        // BFS，arr为用于赋值的层序遍历数组，queue为辅助队列
+        let node = queue.shift()
+        if (arr[i] != null){
+            node.left = new TreeNode(arr[i])
+            queue.push(node.left)
+        }
+        i++
+        if (arr[i] != null){
+            node.right = new TreeNode(arr[i])
+            queue.push(node.right)
+        }
+        i++
+    }
+    return root
+
 };
 ```
 
