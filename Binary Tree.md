@@ -153,7 +153,7 @@ var mirrorTree = function(root) {
 }
 ```
 
-#### 4、树的子结构
+#### 5、树的子结构
 
 <img src="assets/image-20220218143017039.png" alt="image-20220218143017039" style="zoom: 95%;" />
 
@@ -189,5 +189,38 @@ var isSubStructure = function(A, B) {
     // 对A和B先整体判断是否是子结构，再递归地判断A的左子树和A的右子树
     return recur(A, B) || isSubStructure(A.left, B) || isSubStructure(A.right, B);
 };
+```
+
+
+
+#### 6、判断一个后序遍历数组是否是某BST
+
+<img src="assets/image-20220219125505106.png" alt="image-20220219125505106" style="zoom:67%;" />
+
+```js
+/**
+ * @param {number[]} postorder
+ * @return {boolean}
+ */
+var verifyPostorder = function(postorder) {
+    // BST: 左子树所有节点值 < 父节点 < 右子树所有节点值
+    // 后序：左右中，每次的最后一个元素就是根
+    return recur(postorder, 0, postorder.length - 1);
+};
+
+function recur (postorder, i, j) {
+    // i, j 为当前子树在后序数组中的子数组索引值
+    if (i >= j) return true;
+    // p: 指针，初始指向左边
+    let p = i;
+    // 找到后序子数组中第一个大于根节点（最后一个元素）的节点，此即左右子树的分界点
+    while (postorder[p] < postorder[j]) p++;
+    // 将分界点索引赋值为m
+    let m = p;
+    // 继续向右遍历右子树
+    while (postorder[p] > postorder[j]) p++;
+    // 若确实是某BST的后序遍历，则p指针到最后会指向根节点，然后对左右子树递归地判断
+    return p === j && recur(postorder, i, m - 1) && recur(postorder, m, j - 1);
+}
 ```
 
