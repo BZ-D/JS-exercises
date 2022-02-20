@@ -823,14 +823,12 @@ https://wangdoc.com/javascript/dom/node.html
 
   上面代码在 DOM 里面移除了`el`节点。
 
-- **（1）ChildNode.before()**
-
-  `before()`方法用于在当前节点的前面，插入一个或多个同级节点。两者拥有相同的父节点。
+- `before()`方法用于在当前节点的前面，插入一个或多个同级节点。两者拥有相同的父节点。
 
   注意，该方法不仅可以插入元素节点，还可以插入文本节点。
 
   ```js
-  var p = document.createElement('p');
+var p = document.createElement('p');
   var p1 = document.createElement('p');
   
   // 插入元素节点
@@ -845,7 +843,7 @@ https://wangdoc.com/javascript/dom/node.html
   // 插入元素节点和文本节点
   el.before(p, 'Hello');
   ```
-
+  
   **（2）ChildNode.after()**
 
   `after()`方法用于在当前节点的后面，插入一个或多个同级节点，两者拥有相同的父节点。用法与`before`方法完全相同。
@@ -858,3 +856,393 @@ https://wangdoc.com/javascript/dom/node.html
   ```
 
   上面代码中，`el`节点将被`span`节点替换。
+
+
+
+## Element节点
+
+Element节点对应于网页中的HTML元素，每个元素都会转化为DOM树上的一个节点对象，nodeType属性值为1。
+
+<a href="https://wangdoc.com/javascript/dom/element.html">参考链接</a>
+
+- 操作属性相关的方法：
+  - `getAttribute()`：读取某个属性的值
+  - `getAttributeNames()`：返回当前元素的所有属性名
+  - `setAttribute()`：写入属性值
+  - `hasAttribute()`：某个属性是否存在
+  - `hasAttributes()`：当前元素是否有属性
+  - `removeAttribute()`：删除属性
+- 诸如 `getXXXByXXX` 的document实例方法，在元素节点中也可以使用
+- 事件相关方法：
+  - `Element.addEventListener()`：添加事件的回调函数
+  - `Element.removeEventListener()`：移除事件监听函数
+  - `Element.dispatchEvent()`：触发事件
+
+- `Element.scrollIntoView`方法滚动当前元素，进入浏览器的可见区域，类似于设置`window.location.hash`的效果。
+
+  ```
+  el.scrollIntoView(); // 等同于el.scrollIntoView(true)
+  el.scrollIntoView(false);
+  ```
+
+  该方法可以接受一个布尔值作为参数。如果为`true`，表示元素的顶部与当前区域的可见部分的顶部对齐（前提是当前区域可滚动）；如果为`false`，表示元素的底部与当前区域的可见部分的尾部对齐（前提是当前区域可滚动）。如果没有提供该参数，默认为`true`。
+
+- `Element.getBoundingClientRect`方法返回一个对象，提供当前元素节点的大小、位置等信息，基本上就是 CSS 盒状模型的所有信息。
+
+  ```
+  var rect = obj.getBoundingClientRect();
+  ```
+
+  上面代码中，`getBoundingClientRect`方法返回的`rect`对象，具有以下属性（全部为只读）。
+
+  - `x`：元素左上角相对于视口的横坐标
+  - `y`：元素左上角相对于视口的纵坐标
+  - `height`：元素高度
+  - `width`：元素宽度
+  - `left`：元素左上角相对于视口的横坐标，与`x`属性相等
+  - `right`：元素右边界相对于视口的横坐标（等于`x + width`）
+  - `top`：元素顶部相对于视口的纵坐标，与`y`属性相等
+  - `bottom`：元素底部相对于视口的纵坐标（等于`y + height`）
+
+  由于元素相对于视口（viewport）的位置，会随着页面滚动变化，因此表示位置的四个属性值，都不是固定不变的。如果想得到绝对位置，可以将`left`属性加上`window.scrollX`，`top`属性加上`window.scrollY`。
+
+  注意，`getBoundingClientRect`方法的所有属性，都把边框（`border`属性）算作元素的一部分。也就是说，都是从边框外缘的各个点来计算。因此，`width`和`height`包括了元素本身 + `padding` + `border`。
+
+  另外，上面的这些属性，都是继承自原型的属性，`Object.keys`会返回一个空数组，这一点也需要注意。
+
+  ```
+  var rect = document.body.getBoundingClientRect();
+  Object.keys(rect) // []
+  ```
+
+  上面代码中，`rect`对象没有自身属性，而`Object.keys`方法只返回对象自身的属性，所以返回了一个空数组。
+
+
+
+## 属性的操作
+
+元素对象有一个`attributes`属性，返回一个类似数组的动态对象，成员是该元素标签的所有属性节点对象，属性的实时变化都会反映在这个节点对象上。其他类型的节点对象，虽然也有`attributes`属性，但返回的都是`null`，因此可以把这个属性视为元素对象独有的。
+
+- 单个属性可以通过序号引用，也可以通过属性名引用。
+
+  ```
+  // HTML 代码如下
+  // <body bgcolor="yellow" onload="">
+  document.body.attributes[0]
+  document.body.attributes.bgcolor
+  document.body.attributes['ONLOAD']
+  ```
+
+  注意，上面代码的三种方法，返回的都是属性节点对象，而不是属性值。
+
+  属性节点对象有`name`和`value`属性，对应该属性的属性名和属性值，等同于`nodeName`属性和`nodeValue`属性。
+
+  ```js
+  // HTML代码为
+  // <div id="mydiv">
+  var n = document.getElementById('mydiv');
+  
+  n.attributes[0].name // "id"
+  n.attributes[0].nodeName // "id"
+  
+  n.attributes[0].value // "mydiv"
+  n.attributes[0].nodeValue // "mydiv"
+  ```
+
+  下面代码可以遍历一个元素节点的所有属性。
+
+  ```js
+  var para = document.getElementsByTagName('p')[0];
+  var result = document.getElementById('result');
+  
+  if (para.hasAttributes()) {
+    var attrs = para.attributes;
+    var output = '';
+    for(var i = attrs.length - 1; i >= 0; i--) {
+      output += attrs[i].name + '->' + attrs[i].value;
+    }
+    result.textContent = output;
+  } else {
+    result.textContent = 'No attributes to show';
+  }
+  ```
+
+- HTML 元素的标准属性（即在标准中定义的属性），会自动成为元素节点对象的属性。
+
+  ```
+  var a = document.getElementById('test');
+  a.id // "test"
+  a.href // "http://www.example.com/"
+  ```
+
+  上面代码中，`a`元素标签的属性`id`和`href`，自动成为节点对象的属性。
+
+  这些属性都是**可写的**。
+
+  ```
+  var img = document.getElementById('myImage');
+  img.src = 'http://www.example.com/image.jpg';
+  ```
+
+  上面的写法，会立刻替换掉`img`对象的`src`属性，即会显示另外一张图片。
+
+  这种修改属性的方法，常常用于添加表单的属性。
+
+  ```
+  var f = document.forms[0];
+  f.action = 'submit.php';
+  f.method = 'POST';
+  ```
+
+  上面代码为表单添加提交网址和提交方法。
+
+  注意，这种用法虽然可以读写属性，**但是无法删除属性**，`delete`运算符在这里不会生效。
+
+  HTML 元素的属性名是大小写不敏感的，但是 JavaScript 对象的属性名是大小写敏感的。转换规则是，转为 JavaScript 属性名时，一律采用小写。如果属性名包括多个单词，则采用骆驼拼写法，即从第二个单词开始，每个单词的首字母采用大写，比如`onClick`。
+
+  有些 HTML 属性名是 JavaScript 的保留字，转为 JavaScript 属性时，必须改名。主要是以下两个。
+
+  - `for`属性改为`htmlFor`
+  - `class`属性改为`className`
+
+  另外，HTML 属性值一般都是字符串，但是 JavaScript 属性会自动转换类型。比如，将字符串`true`转为布尔值，将`onClick`的值转为一个函数，将`style`属性的值转为一个`CSSStyleDeclaration`对象。因此，可以对这些属性赋予各种类型的值。
+
+- 操作属性的标准方法（包括自定义属性）：
+  - `getAttribute()`：只返回字符串
+  - `getAttributeNames()`
+  - `setAttribute()`
+  - `hasAttribute()`
+  - `hasAttributes()`
+  - `removeAttribute()`
+
+- 有时，需要在HTML元素上附加数据，供 JavaScript 脚本使用。一种解决方法是自定义属性。
+
+  ```
+  <div id="mydiv" foo="bar">
+  ```
+
+  上面代码为`div`元素自定义了`foo`属性，然后可以用`getAttribute()`和`setAttribute()`读写这个属性。
+
+  ```
+  var n = document.getElementById('mydiv');
+  n.getAttribute('foo') // bar
+  n.setAttribute('foo', 'baz')
+  ```
+
+  这种方法虽然可以达到目的，但是会使得 HTML 元素的属性不符合标准，导致网页代码通不过校验。
+
+  更好的解决方法是，**使用标准提供的`data-*`属性。**
+
+  ```
+  <div id="mydiv" data-foo="bar">
+  ```
+
+  然后，使用元素节点对象的`dataset`属性，它指向一个对象，可以用来操作 HTML 元素标签的`data-*`属性。
+
+  ```
+  var n = document.getElementById('mydiv');
+  n.dataset.foo // bar
+  n.dataset.foo = 'baz'
+  ```
+
+  上面代码中，通过`dataset.foo`读写`data-foo`属性。
+
+  **删除一个`data-*`属性，可以直接使用`delete`命令。**
+
+  ```
+  delete document.getElementById('myDiv').dataset.foo;
+  ```
+
+  除了`dataset`属性，也可以用`getAttribute('data-foo')`、`removeAttribute('data-foo')`、`setAttribute('data-foo')`、`hasAttribute('data-foo')`等方法操作`data-*`属性。
+
+
+
+## Text节点
+
+文本节点（`Text`）代表元素节点（`Element`）和属性节点（`Attribute`）的文本内容。如果一个节点只包含一段文本，那么它就有一个文本子节点，代表该节点的文本内容。
+
+通常我们使用父节点的`firstChild`、`nextSibling`等属性获取文本节点，或者使用`Document`节点的`createTextNode`方法创造一个文本节点。
+
+### 属性
+
+### data
+
+`data`属性等同于`nodeValue`属性，用来设置或读取文本节点的内容。
+
+```
+// 读取文本内容
+document.querySelector('p').firstChild.data
+// 等同于
+document.querySelector('p').firstChild.nodeValue
+
+// 设置文本内容
+document.querySelector('p').firstChild.data = 'Hello World';
+```
+
+### wholeText
+
+`wholeText`属性将当前文本节点与毗邻的文本节点，作为一个整体返回。大多数情况下，`wholeText`属性的返回值，与`data`属性和`textContent`属性相同。但是，某些特殊情况会有差异。
+
+举例来说，HTML 代码如下。
+
+```
+<p id="para">A <em>B</em> C</p>
+```
+
+这时，文本节点的`wholeText`属性和`data`属性，返回值相同。
+
+```
+var el = document.getElementById('para');
+el.firstChild.wholeText // "A "
+el.firstChild.data // "A "
+```
+
+但是，一旦移除`<em>`节点，`wholeText`属性与`data`属性就会有差异，因为这时其实`<p>`节点下面包含了两个毗邻的文本节点。
+
+```
+el.removeChild(para.childNodes[1]);
+el.firstChild.wholeText // "A C"
+el.firstChild.data // "A "
+```
+
+### length
+
+`length`属性返回当前文本节点的文本长度。
+
+```
+(new Text('Hello')).length // 5
+```
+
+### nextElementSibling，previousElementSibling
+
+`nextElementSibling`属性返回紧跟在当前文本节点后面的那个同级元素节点。如果取不到元素节点，则返回`null`。
+
+```
+// HTML 为
+// <div>Hello <em>World</em></div>
+var tn = document.querySelector('div').firstChild;
+tn.nextElementSibling
+// <em>World</em>
+```
+
+`previousElementSibling`属性返回当前文本节点前面最近的同级元素节点。如果取不到元素节点，则返回`null：`。
+
+
+
+### 方法
+
+### appendData()，deleteData()，insertData()，replaceData()，subStringData()
+
+以下5个方法都是编辑`Text`节点文本内容的方法。
+
+- `appendData()`：在`Text`节点尾部追加字符串。
+- `deleteData()`：删除`Text`节点内部的子字符串，第一个参数为子字符串开始位置，第二个参数为子字符串长度。
+- `insertData()`：在`Text`节点插入字符串，第一个参数为插入位置，第二个参数为插入的子字符串。
+- `replaceData()`：用于替换文本，第一个参数为替换开始位置，第二个参数为需要被替换掉的长度，第三个参数为新加入的字符串。
+- `subStringData()`：用于获取子字符串，第一个参数为子字符串在`Text`节点中的开始位置，第二个参数为子字符串长度。
+
+```
+// HTML 代码为
+// <p>Hello World</p>
+var pElementText = document.querySelector('p').firstChild;
+
+pElementText.appendData('!');
+// 页面显示 Hello World!
+pElementText.deleteData(7, 5);
+// 页面显示 Hello W
+pElementText.insertData(7, 'Hello ');
+// 页面显示 Hello WHello
+pElementText.replaceData(7, 5, 'World');
+// 页面显示 Hello WWorld
+pElementText.substringData(7, 10);
+// 页面显示不变，返回"World "
+```
+
+### remove()
+
+`remove`方法用于移除当前`Text`节点。
+
+```
+// HTML 代码为
+// <p>Hello World</p>
+document.querySelector('p').firstChild.remove()
+// 现在 HTML 代码为
+// <p></p>
+```
+
+### splitText()
+
+`splitText`方法将`Text`节点一分为二，变成两个毗邻的`Text`节点。它的参数就是分割位置（从零开始），分割到该位置的字符前结束。如果分割位置不存在，将报错。
+
+分割后，该方法返回分割位置后方的字符串，而原`Text`节点变成只包含分割位置前方的字符串。
+
+```
+// html 代码为 <p id="p">foobar</p>
+var p = document.getElementById('p');
+var textnode = p.firstChild;
+
+var newText = textnode.splitText(3);
+newText // "bar"
+textnode // "foo"
+```
+
+父元素节点的`normalize`方法可以将毗邻的两个`Text`节点合并。
+
+接上面的例子，文本节点的`splitText`方法将一个`Text`节点分割成两个，父元素的`normalize`方法可以实现逆操作，将它们合并。
+
+```
+p.childNodes.length // 2
+
+// 将毗邻的两个 Text 节点合并
+p.normalize();
+p.childNodes.length // 1
+```
+
+
+
+## DocumentFragment 节点
+
+`DocumentFragment`节点代表一个文档的片段，本身就是一个完整的 DOM 树形结构。它没有父节点，`parentNode`返回`null`，但是可以插入任意数量的子节点。它不属于当前文档，**操作`DocumentFragment`节点，要比直接操作 DOM 树快得多**。
+
+它一般用于构建一个 DOM 结构，然后插入当前文档。`document.createDocumentFragment`方法，以及浏览器原生的`DocumentFragment`构造函数，可以创建一个空的`DocumentFragment`节点。然后再使用其他 DOM 方法，向其添加子节点。
+
+```
+var docFrag = document.createDocumentFragment();
+// 等同于
+var docFrag = new DocumentFragment();
+
+var li = document.createElement('li');
+li.textContent = 'Hello World';
+docFrag.appendChild(li);
+
+document.querySelector('ul').appendChild(docFrag);
+```
+
+上面代码创建了一个`DocumentFragment`节点，然后将一个`li`节点添加在它里面，最后将`DocumentFragment`节点移动到原文档。
+
+注意，`DocumentFragment`**节点本身不能被插入当前文档**。当它作为`appendChild()`、`insertBefore()`、`replaceChild()`等方法的参数时，**是它的所有子节点插入当前文档，而不是它自身**。一旦`DocumentFragment`节点被添加进当前文档，它自身就变成了**空节点**（`textContent`属性为空字符串），可以被再次使用。如果想要保存`DocumentFragment`节点的内容，可以使用`cloneNode`方法。
+
+```
+document
+  .querySelector('ul')
+  .appendChild(docFrag.cloneNode(true));
+```
+
+上面这样添加`DocumentFragment`节点进入当前文档，不会清空`DocumentFragment`节点。
+
+下面是一个例子，使用`DocumentFragment`反转一个指定节点的所有子节点的顺序。
+
+```
+function reverse(n) {
+  var f = document.createDocumentFragment();
+  while(n.lastChild) f.appendChild(n.lastChild);
+  n.appendChild(f);
+}
+```
+
+`DocumentFragment`节点对象没有自己的属性和方法，全部继承自`Node`节点和`ParentNode`接口。也就是说，`DocumentFragment`节点比`Node`节点多出以下四个属性。
+
+- `children`：返回一个动态的`HTMLCollection`集合对象，包括当前`DocumentFragment`对象的所有子元素节点。
+- `firstElementChild`：返回当前`DocumentFragment`对象的第一个子元素节点，如果没有则返回`null`。
+- `lastElementChild`：返回当前`DocumentFragment`对象的最后一个子元素节点，如果没有则返回`null`。
+- `childElementCount`：返回当前`DocumentFragment`对象的所有子元素数量。
