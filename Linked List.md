@@ -139,3 +139,25 @@ var copyRandomList = function(head) {
 
 ```
 
+
+
+#### 5、找出两链表的第一个公共节点
+
+<img src="assets/image-20220221204752871.png" alt="image-20220221204752871" style="zoom:67%;" />
+
+- 设A的总长为a，B的总长为b，公共长度为c，则在公共节点之前，A部分长度为(a-c)，B部分长度为(b-c)
+- 当A走到头时，让A从B的头部开始走，当B走到头时，让B从A的头部开始走，则相遇时，A走了(a+b-c)，B走了(b+a-c)，可见两者长度一致，因此会相遇
+
+```js
+var getIntersectionNode = function(headA, headB) {
+  if (headA === null || headB === null) return null;
+
+  let ha = headA, hb = headB;
+  while (ha !== hb) {
+    ha = ha === null ? headB : ha.next;
+    hb = hb === null ? headA : hb.next;
+  }
+  return ha;
+};
+```
+
