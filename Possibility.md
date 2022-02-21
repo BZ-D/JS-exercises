@@ -413,3 +413,26 @@ var knightProbability = function(n, k, row, column) {
 
 ```
 
+
+
+#### 6、字符串中的最长不重复子串
+
+![image-20220221181017716](assets/image-20220221181017716.png)
+
+```js
+var lengthOfLongestSubstring = function(s) {
+    // str：动态规划数组，用于存放遍历到当前下表字符s[i]时的不重复子串
+    let str = [], maxLen = 0;
+    for (let i = 0; i < s.length; i++) {
+        let ind = str.indexOf(s[i]);
+        if (ind !== -1)  {
+            // 若str数组中已经有s[i]了，则切分数组
+            str.splice(0, ind + 1);
+        }
+        str.push(s[i]);
+        maxLen = Math.max(maxLen, str.length);
+    }
+    return maxLen;
+};
+```
+
