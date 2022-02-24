@@ -66,3 +66,47 @@ function point2Str(x, y) {
 }
 ```
 
+
+
+#### 2、球落在何处
+
+![image-20220224111912317](assets/image-20220224111912317.png)
+
+**模拟思路：**
+
+- 对于某列 col 上的小球，其当前位置为 `(i,j)`，若 `grid[i][j] === 1`，则为正对角线，此时 `j++`，若 `grid[i][j] === -1`，则为反对角线，此时 `j--`，若 `j` 越过了左右边界，则说明卡住了；若 `grid[i][j] !== grid[i][j + 1]`，说明左右两格形成了 V 字，也卡住了
+
+```js
+/**
+ * @param {number[][]} grid
+ * @return {number[]}
+ */
+var findBall = function(grid) {
+  const m = grid.length, n = grid[0].length;
+  let ans = new Array(n);
+
+  const getVal = function(col) {
+    // 从第一行开始往下掉
+    let row = 0;
+    while (row < m) {
+      // 计算出小球下降一行后所处的列位置
+      let ne = col + grid[row][col];
+      // 越过了左右板子
+      if (ne < 0 || ne >= n) return -1;
+      // 左右形成V字
+      if (grid[row][ne] !== grid[row][col]) return -1;
+
+      col = ne;
+      row++;
+    }
+    return col;
+  };
+
+  for (let col = 0; col < n; col++) {
+    ans[col] = getVal(col);
+  }
+
+  return ans;
+};
+```
+
