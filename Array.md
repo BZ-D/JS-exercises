@@ -210,3 +210,58 @@ function reverseArr(arr, fromInd, toInd) {
 }
 ```
 
+
+
+#### 6、数组中的逆序对——归并排序应用
+
+![image-20220221202126406](assets/image-20220221202126406.png)
+
+**思路：**
+
+- 分治，归并排序：归并排序的思路是将数组不断从中间分割为子数组，直至分割的子数组只有一个元素，然后对于被一分为二的两个子数组，分别创建两个指针指向两个子数组开头，每次将指向的较小元素添加到一个临时数组中，最终实现升序
+- 在合并子数组的过程中，若出现左边子数组元素大于右边子数组元素的情况，则认为出现了“逆序对”，由于子数组在分治之后已是逆序，因此左子数组的当前元素之后的元素都比它大，因此也比右子数组当前元素大，所以此时构成了多对逆序对
+
+```js
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+var reversePairs = function (nums) {
+  let ans = 0;
+  if (nums.length === 0) return 0;
+
+  const mergeSort = (l, r) => {
+    // 闭区间，即l和r都是合法下标
+    // 终止条件：子数组只剩一个元素
+    if (l === r)  return [nums[l]];
+
+    let m = l + (r - l >> 1);
+    let left = mergeSort(l, m);
+    let right = mergeSort(m + 1, r);
+
+    let len = r - l + 1;
+    // 用作合并后的新数组，合并后为升序
+    let merged = new Array(len);
+    // i指向left，j指向right，k指向merged
+    let i = 0, j = 0, k = 0;
+    for (; k < len && i < left.length && j < right.length; k++) {
+      if (right[j] >= left[i]) {
+        // 右大于左，非逆序
+        merged[k] = left[i++];
+      } else {
+        // 左大于右，出现逆序，注意由于左边子数组已经升序了，因此left[i]之后的元素都和right[j]构成逆序对
+        ans += left.length - i;
+        merged[k] = right[j++];
+      }
+    }
+    while (i < left.length) { merged[k] = left[i++];  k++; }
+    while (j < right.length) { merged[k] = right[j++]; k++; }
+
+    return merged;
+  }
+
+  mergeSort(0, nums.length - 1);
+  return ans;
+};
+```
+

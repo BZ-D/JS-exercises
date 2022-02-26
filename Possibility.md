@@ -413,3 +413,63 @@ var knightProbability = function(n, k, row, column) {
 
 ```
 
+
+
+#### 6、字符串中的最长不重复子串
+
+![image-20220221181017716](assets/image-20220221181017716.png)
+
+```js
+var lengthOfLongestSubstring = function(s) {
+    // str：动态规划数组，用于存放遍历到当前下表字符s[i]时的不重复子串
+    let str = [], maxLen = 0;
+    for (let i = 0; i < s.length; i++) {
+        let ind = str.indexOf(s[i]);
+        if (ind !== -1)  {
+            // 若str数组中已经有s[i]了，则切分数组
+            str.splice(0, ind + 1);
+        }
+        str.push(s[i]);
+        maxLen = Math.max(maxLen, str.length);
+    }
+    return maxLen;
+};
+```
+
+
+
+#### 7、第n个丑数
+
+![image-20220221185644718](assets/image-20220221185644718.png)
+
+**思路：动态规划**
+
+- 所有丑数一定由之前的丑数乘2、乘3、或乘5得到
+- 设 `dp[i]` 为第 i 个丑数，则 `dp[i]` 一定由之前的某个丑数乘2、乘3、或乘5得到
+- 设三个指针 a、b、c，初始时指向 dp[1]，分别用于对所指值进行乘2、乘3、乘5操作，取这三个结果中的最小值，即为下一个丑数
+- 哪一个指针的值乘积被选中，则该指针向后移动一位；为了去重，也要判断其他指针是否移动
+
+```js
+/**
+ * @param {number} n
+ * @return {number}
+ */
+var nthUglyNumber = function(n) {
+    let dp = new Array(n + 1);
+    dp[1] = 1;
+
+    let a = 0, b = 0, c = 0;
+    for (let i = 2; i <= n; i++) {
+        let n1 = dp[a] * 2, n2 = dp[b] * 3, n3 = dp[c] * 5;
+        dp[i] = Math.min(n1, n2, n3);
+        
+        // 这里不能用 if-else 结构，否则会出现重复，如 2*3 和 3*2，即若丑数6（3*2）被选中，则指针b也要移动，否则出现（2*3）的情况
+        if (dp[i] === n1) a++;
+        if (dp[i] === n2) b++;
+        if (dp[i] === n3) c++;
+    }
+    return dp[n];
+};
+
+```
+
