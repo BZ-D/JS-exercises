@@ -261,3 +261,39 @@ all_my_elements.forEach(doubleHeight);
 - JS 是一种解释型语言，不需要编译，由解释器实时运行。优点是运行和修改比较方便，刷新页面就可以重新解释；缺点是每次运行都要调用解释器，系统开销大，运行速度慢于编译型语言
 - JIT：Just In Time，即时编译。为了提高运行速度，目前的浏览器将 JS 代码进行一定程度的编译，生成类似字节码的中间代码。在 JIT 下，字节码只在运行时编译，用到哪一行就编译哪一行，并把编译结果缓存。而这些字节码运行在 JavaScript 引擎上
 - 例子：Chrome V8
+
+
+
+## window对象
+
+https://wangdoc.com/javascript/bom/window.html
+
+
+
+## navigator对象
+
+https://wangdoc.com/javascript/bom/navigator.html
+
+
+
+## Cookie
+
+https://wangdoc.com/javascript/bom/cookie.html
+
+
+
+## XMLHttpRequest对象
+
+https://wangdoc.com/javascript/bom/xmlhttprequest.html
+
+
+
+## 同源限制
+
+https://wangdoc.com/javascript/bom/same-origin.html
+
+
+
+## CORS
+
+https://wangdoc.com/javascript/bom/cors.html
