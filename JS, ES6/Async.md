@@ -662,3 +662,52 @@ timer = setTimeout(func, 0);
 上面代码有两种写法，都是改变一个网页元素的背景色。写法一会造成浏览器“堵塞”，因为 JavaScript 执行速度远高于 DOM，会造成大量 DOM 操作“堆积”，而写法二就不会，这就是`setTimeout(f, 0)`的好处。
 
 另一个使用这种技巧的例子是代码高亮的处理。如果代码块很大，一次性处理，可能会对性能造成很大的压力，那么将其分成一个个小块，一次处理一块，比如写成`setTimeout(highlightNext, 50)`的样子，性能压力就会减轻。
+
+
+
+### 让多个Promise实例串行执行
+
+- 在 promiseChain 方法中，主体为递归函数 cur
+- 采用递归的原因：保证函数执行顺序，保证 promiseList 数组中的 promise 实例都能串行执行
+- 如果用 for、forEach 等方法进行遍历，实际上是让多个 promise 实例并行执行了
+
+```js
+const promise1 = Promise.resolve(1);
+const promise2 = new Promise(resolve => {
+  setTimeout(() => {
+    resolve(2);
+  }, 3000);
+});
+const promise3 = new Promise(resolve => {
+  setTimeout(() => {
+    resolve(3);
+  }, 2000);
+});
+const promiseList = [promise1, promise2, promise3];
+
+function promiseChain(promiseList) {
+  let index = 0;
+  const results = [];
+  return new Promise((resolve => {
+    const recur = () => {  // 递归函数主体
+      promiseList[index].then(res => {  // 对当前promise实例调用then()
+        console.log(res);  // 打印res
+        index++;
+        results.push(res);
+        if (index === promiseList.length) {  // 所有promise实例都执行完毕
+          return resolve(results);
+        }
+        recur();  // 递归调用，保证promise实例是串行执行的
+      })
+    }
+    recur();
+  }))
+}
+
+let p = promiseChain(promiseList)
+p.then(res => {
+  console.log('所有 Promise 执行完毕。');
+  console.log(...res)
+});
+```
+
