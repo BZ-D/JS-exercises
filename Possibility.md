@@ -473,3 +473,46 @@ var nthUglyNumber = function(n) {
 
 ```
 
+
+
+#### 8、抢劫银行的好日子
+
+![image-20220306130040717](assets/image-20220306130040717.png)
+
+**思路：**
+
+- 动态规划，前缀和后缀和
+- left数组存储第i天左侧连续非递增的天数，right数组存储第i天右侧连续非递减的天数
+- 然后再次遍历security数组，对于第i位置的元素，若`left[i] >= time && right[i] >= time`，说明左边存在time天连续非递增，右边存在time天连续非递减
+
+```js
+/**
+ * @param {number[]} security
+ * @param {number} time
+ * @return {number[]}
+ */
+var goodDaysToRobBank = function(security, time) {
+  const len = security.length;
+  const left = new Array(len).fill(0);  // 存储到第i天左侧连续递减的天数
+  const right = new Array(len).fill(0);  // 存储到第i天右侧连续递增的天数
+
+  for (let i = 1; i < len; i++) {
+    if (security[i] <= security[i - 1]) {
+      left[i] = left[i - 1] + 1;
+    }
+    if (security[len - i - 1] <= security[len - i]) {
+      right[len - i - 1] = right[len - i] + 1;
+    }
+  }
+
+  const ans = [];
+  for (let i = time; i < len - time; i++) {
+    if (left[i] >= time && right[i] >= time) {
+      ans.push(i);
+    }
+  }
+
+  return ans;
+};
+```
+
