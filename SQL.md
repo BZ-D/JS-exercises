@@ -200,3 +200,38 @@ having count(*) >= 2
 order by first_date;
 ```
 
+
+
+##### 5.3 查询每个日期的新用户次日留存率
+
+- 找到所有有新用户登录的表 a
+- a left join logins b，连接条件为 user_id 相等，且 b 表中存在 a 表中某日期 + 1天，即某一新用户第二天继续登录了
+- 此时 count(b.user_id) 就是新用户次日留存的天数，count(a.user_id) 就是所有有新用户登录的日期
+- 若某天没有新用户，则其第二天留存率必为 0，用 union 子句加上所有没有新用户的日期（注：union 子句不会选取重复的元组，如果需要选取重复元组，需要用 union all）
+
+```sql
+select a.first_date as date, count(b.user_id) / count(a.user_id) as rate from
+
+(select user_id, min(login_date) as first_date
+from logins
+group by user_id) a
+
+left join logins b
+
+on a.user_id = b.user_id and
+b.login_date = date_add(a.first_date, INTERVAL 1 DAY)
+group by a.first_date
+
+union
+-- 再加上没有新用户的日期，次日留存率就是0
+select login_date, 0 as p
+from logins
+where login_date not in (
+	select min(login_date)
+	from logins
+	group by user_id
+)
+
+order by date;
+```
+
