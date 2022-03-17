@@ -516,3 +516,44 @@ var goodDaysToRobBank = function(security, time) {
 };
 ```
 
+
+
+#### 9、投掷 n 个骰子的点数概率
+
+<img src="assets/image-20220317130246983.png" alt="image-20220317130246983" style="zoom:50%;" />
+
+**思路**
+
+- 动态规划
+- dp[i] 为投掷 i 个骰子，每个可能点数的概率，点数为 **下标+1**，元素为 **概率**
+- 初始值：dp[0] = BASE = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+- 递推关系：dp\[i]\[j + k] = BASE[j] * dp\[i - 1]\[k]
+
+<img src="assets/image-20220317131010074.png" alt="image-20220317131010074" style="zoom:50%;" />
+
+```js
+/**
+ * @param {number} n
+ * @return {number[]}
+ */
+var dicesProbability = function(n) {
+  // 点数可能：n ~ 6n，数组大小：5n + 1
+  const BASE = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6];
+  
+  const dp = new Array(n);
+  dp[0] = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6];
+
+  for (let i = 1; i < n; i++) {
+    dp[i] = new Array(5 * (i + 1) + 1).fill(0);
+
+    for (let j = 0; j < 6; j++) {  // j: BASE指针
+      for (let k = 0; k < dp[i - 1].length; k++) {  // k：dp[i - 1]指针
+        dp[i][j + k] += BASE[j] * dp[i - 1][k];
+      }
+    }
+  }
+
+  return dp[n - 1];
+};
+```
+
