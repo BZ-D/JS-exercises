@@ -336,6 +336,7 @@ var deserialize = function(data) {
     let queue = [root], i = 1
     while(queue.length && i < arr.length) {
         // BFS，arr为用于赋值的层序遍历数组，queue为辅助队列
+        // 队列的操作可以用一个索引值 index 维护，用于替代 shift，可以提升效率
         let node = queue.shift()
         if (arr[i] != null){
             node.left = new TreeNode(arr[i])
